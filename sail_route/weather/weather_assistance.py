@@ -84,8 +84,8 @@ def plot_wind_data(folder, fname):
 def generate_gif(folder, name):
     """Generate gif from pngs in folder. Delete pngs afterwards."""
     os.chdir(folder)
-    subprocess.call(['ffmpeg', '-framerate', '10', '-i', 'file%d0.png',
-                     '-r', '1', 'output.avi'])
+    subprocess.call(['ffmpeg', '-framerate', '0.5', '-i', 'file%d.png',
+                     '-r', '30', 'output.avi'])
     subprocess.call(['ffmpeg', '-i', 'output.avi', name+'.gif'])
     test = os.listdir(folder)
     for item in test:
@@ -113,7 +113,6 @@ def prepare_wind_data(fname):
 
 def interpolate_weather_data(long, lat, time, ws, wa):
     """Interpolate weather data at specific points."""
-    locations = [('longitude', long), ('latitude', lat), ['time', time]]
-    ws_interp = ws.interpolate(locations, iris.analysis.Linear())
-    wa_interp = wa.interpolate(locations, iris.analysis.Linear())
+    ws_interp = ws.interpolate([('longitude', long), ('latitude', lat), ['time', time]], iris.analysis.Linear())
+    wa_interp = wa.interpolate([('longitude', long), ('latitude', lat), ['time', time]], iris.analysis.Linear())
     return ws_interp.data, wa_interp.data

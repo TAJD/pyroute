@@ -16,10 +16,12 @@ def get_perf():
 
 class polar(object):
     "Store and return information on sailing craft polar chart."
-    def __init__(self, tws_range, twa_range, perf):
+    def __init__(self, tws_range, twa_range, perf, unc=0.0):
+        """Initialise sailing craft performance data."""
         self.twa_range = twa_range
         self.tws_range = tws_range
         self.perf = perf
+        self.unc = unc
 
     @jit
     def return_perf(self, tws, twa):

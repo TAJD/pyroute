@@ -5,13 +5,27 @@ thomas.dickson@soton.ac.uk
 """
 
 import numpy as np
-from numba import njit
 import datetime
 from datetime import datetime
 from datetime import timedelta
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
+from matplotlib import cm
+
+plt.rcParams['savefig.dpi'] = 400
+plt.rcParams['figure.autolayout'] = False
+plt.rcParams['figure.figsize'] = 10, 6
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['axes.titlesize'] = 20
+plt.rcParams['font.size'] = 16
+plt.rcParams['lines.linewidth'] = 2.0
+plt.rcParams['lines.markersize'] = 8
+plt.rcParams['legend.fontsize'] = 12
+plt.rcParams['text.usetex'] = True
+plt.rcParams['font.family'] = "serif"
+plt.rcParams['font.serif'] = "cm"
+plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
+                                         \\usepackage{type1cm}"""
 
 
 from sail_route.route.grid_locations import return_co_ords
@@ -159,32 +173,37 @@ def plot_route(start, route, x, y, et, jt, pf_vals, fname):
     vt = datetime.fromtimestamp(jt) - start
     add_param = 1
     plt.figure()
-    map = Basemap(projection='merc',
+    map = Basemap(projection='tmerc',
+                  ellps = 'WGS84',
+                  lat_0=(y.min() + y.max())/2,
+                  lon_0=(x.min() + x.max())/2,
                   llcrnrlon=x.min()-add_param,
                   llcrnrlat=y.min()-add_param,
                   urcrnrlon=x.max()+add_param,
                   urcrnrlat=y.max()+add_param,
-                  lat_ts=(y.min() + y.max())/2, resolution='c')
+                  # lat_ts=(y.min() + y.max())/2,
+                  resolution='i') # f = fine resolution
     map.drawcoastlines()
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
-    map.scatter(r_s_x, r_s_y, color='red', s=50)
+    map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
-    map.scatter(r_f_x, r_f_y, color='blue', s=50)
+    map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x, y = map(x, y)
     ctf = map.contourf(x, y, et, cmap='gray')
     x_locs, y_locs = map(x_locs, y_locs)
-    map.scatter(x_locs, y_locs, label='shortest path')
+    map.scatter(x_locs, y_locs, label='shortest path', s=5)
     x_locs_pf, y_locs_pf, pf_min = minimum_pf_locations(x, y, pf_vals)
     x_locs_pf, y_locs_pf = map(x_locs_pf, y_locs_pf)
-    map.scatter(x_locs_pf, y_locs_pf, label='minimum pf path')
+    map.plot(x_locs_pf, y_locs_pf, label='minimum pf path')
     cbar = plt.colorbar(ctf, orientation='horizontal')
     y_tick_labs = [timestamp_to_delta_time(start, x) for x in
                    np.linspace(et.min(), et.max(), 9)]
     cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
-    plt.legend()
+    plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0)
     plt.tight_layout()
     plt.title("Journey time: " + str(vt))
     plt.savefig(fname)
+    plt.clf()
 
 
 

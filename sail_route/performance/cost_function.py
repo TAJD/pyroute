@@ -10,13 +10,12 @@ thomas.dickson@soton.ac.uk
 
 import numpy as np
 import datetime
-from numba import njit, jit
+from numba import jit
 
 
 @jit
 def haversine(lon1, lat1, lon2, lat2):
-    """Calculate the great circle distance between two points.
-    """
+    """Calculate the great circle distance between two points."""
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
     # haversine formula
@@ -47,11 +46,15 @@ def cost_function(x1, y1, x2, y2, tws, twd, craft, lifetime=None):
     twa = bearing - twd
     twa = (twa + 180) % 360 - 180
     speed = craft.return_perf(np.abs(twa), tws)
+    if craft.unc is not 0.0:
+        speed_alt = speed + np.random.normal(0, craft.unc, 1)
+    else:
+        speed_alt = craft.return_perf(np.abs(twa), tws)
     if lifetime is not None:
         pf = craft_failure_model(lifetime, tws, twa)
     else:
         pf = 0.0
     if speed == 0.0:
-        return datetime.timedelta(hours=10), pf
+        return datetime.timedelta(hours=24), pf
     else:
-        return datetime.timedelta(hours=np.float64(dist/speed)), pf
+        return datetime.timedelta(hours=np.float64(dist/speed_alt)), pf
