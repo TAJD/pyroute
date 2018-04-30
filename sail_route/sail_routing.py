@@ -147,8 +147,8 @@ def minimum_pf_locations(x, y, pf_vals):
 
 
 def round_timedelta(td, period):
-    """
-    Rounds the given timedelta by the given timedelta period
+    """Round the given timedelta by the given timedelta period.
+
     :param td: `timedelta` to round
     :param period: `timedelta` period to round by.
     """
@@ -167,14 +167,15 @@ def timestamp_to_delta_time(start, x):
     return round_timedelta(delta, timedelta(minutes=1))
 
 
-def plot_route(start, route, x, y, et, jt, pf_vals, fname):
+def plot_mt_route(start, route, x, y, et, jt, fname):
     """Plot output from routing simulations."""
     x_locs, y_locs, et_s = earliest_time_locations(x, y, et)
     vt = datetime.fromtimestamp(jt) - start
-    add_param = 1
-    plt.figure()
+    add_param = 2
+    res = 'i'
+    plt.figure(figsize=(6, 10))
     map = Basemap(projection='tmerc',
-                  ellps = 'WGS84',
+                  ellps='WGS84',
                   lat_0=(y.min() + y.max())/2,
                   lon_0=(x.min() + x.max())/2,
                   llcrnrlon=x.min()-add_param,
@@ -182,7 +183,7 @@ def plot_route(start, route, x, y, et, jt, pf_vals, fname):
                   urcrnrlon=x.max()+add_param,
                   urcrnrlat=y.max()+add_param,
                   # lat_ts=(y.min() + y.max())/2,
-                  resolution='i') # f = fine resolution
+                  resolution=res)  # f = fine resolution
     map.drawcoastlines()
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
@@ -191,18 +192,46 @@ def plot_route(start, route, x, y, et, jt, pf_vals, fname):
     x, y = map(x, y)
     ctf = map.contourf(x, y, et, cmap='gray')
     x_locs, y_locs = map(x_locs, y_locs)
-    map.scatter(x_locs, y_locs, label='shortest path', s=5)
-    x_locs_pf, y_locs_pf, pf_min = minimum_pf_locations(x, y, pf_vals)
-    x_locs_pf, y_locs_pf = map(x_locs_pf, y_locs_pf)
-    map.plot(x_locs_pf, y_locs_pf, label='minimum pf path')
+    # map.scatter(x_locs, y_locs, label='shortest path', s=5)
     cbar = plt.colorbar(ctf, orientation='horizontal')
     y_tick_labs = [timestamp_to_delta_time(start, x) for x in
                    np.linspace(et.min(), et.max(), 9)]
     cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
-    plt.legend(bbox_to_anchor=(1.04,0.5), loc="center left", borderaxespad=0)
+    plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left",
+               borderaxespad=0)
     plt.tight_layout()
-    plt.title("Journey time: " + str(vt))
-    plt.savefig(fname)
+    plt.title("Minimum journey time: " + str(vt))
+    plt.savefig(fname+"min_time"+".png")
+    plt.clf()
+
+
+def plot_reliability_route(start, route, x, y, pf_vals, jt, fname):
+    plt.figure(figsize=(6, 10))
+    res = 'i'
+    add_param = 2
+    map = Basemap(projection='tmerc',
+                  ellps='WGS84',
+                  lat_0=(y.min() + y.max())/2,
+                  lon_0=(x.min() + x.max())/2,
+                  llcrnrlon=x.min()-add_param,
+                  llcrnrlat=y.min()-add_param,
+                  urcrnrlon=x.max()+add_param,
+                  urcrnrlat=y.max()+add_param,
+                  # lat_ts=(y.min() + y.max())/2,
+                  resolution=res)  #f = fine resolution
+    map.drawcoastlines()
+    x, y = map(x, y)
+    ctf = map.contourf(x, y, pf_vals, cmap='Reds')
+    r_s_x, r_s_y = map(route.start.long, route.start.lat)
+    map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
+    r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
+    map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
+    x_locs_pf, y_locs_pf, pf_min = minimum_pf_locations(x, y, pf_vals)
+    x_locs_pf, y_locs_pf = map(x_locs_pf, y_locs_pf)
+    plt.title("Reliability plot")
+    map.plot(x_locs_pf, y_locs_pf, label='minimum pf path')
+    cbar = plt.colorbar(ctf, orientation='horizontal')
+    plt.savefig(fname+"reliability"+".png")
     plt.clf()
 
 

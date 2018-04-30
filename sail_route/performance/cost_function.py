@@ -10,7 +10,9 @@ thomas.dickson@soton.ac.uk
 
 import numpy as np
 import datetime
-from numba import jit
+from numba import jit, njit
+# import pyximport; pyximport.install()
+# import sail_route.performance.cost_funcs
 
 
 @jit
@@ -19,20 +21,23 @@ def haversine(lon1, lat1, lon2, lat2):
     # convert decimal degrees to radians
     lon1, lat1, lon2, lat2 = map(np.radians, [lon1, lat1, lon2, lat2])
     # haversine formula
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
-    c = 2 * np.arcsin(np.sqrt(a))
-    # Radius of earth in kilometers is 6371
-    km = 6371 * c
-    return km * 0.5399565
+    a = np.sin((lat2 - lat1)/2)**2 + np.cos(lat1) * np.cos(lat2) * \
+    np.sin((lon2 - lon1)/2)**2
+    return 6371 * 2 * np.arcsin(np.sqrt(a)) * 0.5399565
+
+
+@njit
+def wind_strength_step(x):
+    return 1 * (x > 20.0)
 
 
 @jit
-def craft_failure_model(time, tws, twd):
+def craft_failure_model(time, tws, twa):
     """Return probability of failure as a function of time and environment."""
     time = time/datetime.timedelta(hours=1)
-    return 1 - np.exp(0.001*time)
+    pf_wind = wind_strength_step(tws)
+    pf_time = np.exp(0.001*time) - 1
+    return np.min((np.max((pf_time, pf_wind)), 1.0))
 
 
 @jit

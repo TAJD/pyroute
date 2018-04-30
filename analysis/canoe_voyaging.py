@@ -10,13 +10,15 @@ import numpy as np
 from datetime import date, datetime, timedelta
 from sail_route.weather.weather_assistance import download_wind, plot_wind_data, generate_gif
 from sail_route.sail_routing import Location, Route, \
-                                   min_time_calculate, plot_route
+                                   min_time_calculate, plot_mt_route, \
+                                   plot_reliability_route
 from sail_route.performance.craft_performance import polar
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 
 
 def datetime_range(start, end, delta):
+    """Generate range of dates."""
     current = start
     if not isinstance(delta, timedelta):
         delta = timedelta(**delta)
@@ -50,7 +52,7 @@ def run_simulation():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 26
+    no_nodes = 40
     node_distance = (haversine(tahiti.long, tahiti.lat, marquesas.long,
                                marquesas.lat)/0.5399565)/no_nodes
     # print(node_distance)
@@ -58,8 +60,8 @@ def run_simulation():
               node_distance*1000.0, craft)
     wind_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wind_forecast.nc"
     diagram_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
-    sd = datetime(2014, 7, 15, 0, 0)
-    ed = datetime(2014, 7, 21, 0, 0)
+    sd = datetime(2014, 7, 1, 0, 0)
+    ed = datetime(2014, 7, 10 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,
@@ -68,8 +70,8 @@ def run_simulation():
         jt, et, pf_vals = min_time_calculate(r, wind_fname, t, craft)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
-        plot_route(t, r, x, y, et, jt, pf_vals, diagram_path+"/"+str(t)+".png")
-
+        plot_mt_route(t, r, x, y, et, jt, diagram_path+"/"+str(t))
+        plot_reliability_route(t, r, x, y, pf_vals, jt, diagram_path+"/"+str(t))
 
 if __name__ == '__main__':
     # download_wind_poly()
