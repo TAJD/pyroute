@@ -126,22 +126,13 @@ def min_time_calculate(route, wind_fname, time, craft):
     return journey_time, earliest_time, pf_vals
 
 
-def earliest_time_locations(x, y, et):
-    """Identify the locations along the minimum time route."""
+def min_vals(x, y, et):
+    """Identify the locations along the route identified with minimum vals."""
     x_ind, y_ind = np.where(et == et.min(axis=0))
     x_locs = x[x_ind, y_ind]
     y_locs = y[x_ind, y_ind]
     earliest_times = et[x_ind, y_ind]
     return x_locs, y_locs, earliest_times
-
-
-def minimum_pf_locations(x, y, pf_vals):
-    """Identify route with minimum pf vals."""
-    x_ind, y_ind = np.where(pf_vals == pf_vals.min(axis=0))
-    x_locs = x[x_ind, y_ind]
-    y_locs = y[x_ind, y_ind]
-    pf_min = pf_vals[x_ind, y_ind]
-    return x_locs, y_locs, pf_min
 
 
 def round_timedelta(td, period):
@@ -167,7 +158,7 @@ def timestamp_to_delta_time(start, x):
 
 def plot_mt_route(start, route, x, y, et, jt, fname):
     """Plot minimum time output from routing simulations."""
-    x_locs, y_locs, et_s = earliest_time_locations(x, y, et)
+    x_locs, y_locs, et_s = min_vals(x, y, et)
     vt = datetime.fromtimestamp(jt) - start
     add_param = 2
     res = 'i'
@@ -224,7 +215,7 @@ def plot_reliability_route(start, route, x, y, pf_vals, jt, fname):
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
-    x_locs_pf, y_locs_pf, pf_min = minimum_pf_locations(x, y, pf_vals)
+    x_locs_pf, y_locs_pf, pf_min = min_vals(x, y, pf_vals)
     # map.scatter(x_locs_pf, y_locs_pf, color='green', s=20,
                 # label='Minimum pf path')
     cbar = plt.colorbar(ctf, orientation='horizontal', boundaries=np.linspace(0, 1, 10))
