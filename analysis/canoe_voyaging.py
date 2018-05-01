@@ -45,14 +45,14 @@ def load_tongiaki_perf():
     perf = np.genfromtxt("/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
     twa = np.array([60, 70, 80, 90, 100, 110, 120])
-    return polar(twa, tws, perf, 0.5)
+    return polar(twa, tws, perf, 0.0)
 
 
 def run_simulation():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 40
+    no_nodes = 15
     node_distance = (haversine(tahiti.long, tahiti.lat, marquesas.long,
                                marquesas.lat)/0.5399565)/no_nodes
     # print(node_distance)
@@ -61,7 +61,7 @@ def run_simulation():
     wind_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wind_forecast.nc"
     diagram_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
     sd = datetime(2014, 7, 1, 0, 0)
-    ed = datetime(2014, 7, 10 0, 0)
+    ed = datetime(2014, 7, 2, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,

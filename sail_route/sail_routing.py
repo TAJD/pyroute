@@ -109,7 +109,6 @@ def min_time_calculate(route, wind_fname, time, craft):
                 jt = utime + travel_time
                 if jt.timestamp() < earliest_time[k, j+1]:
                     earliest_time[k, j+1] = jt.timestamp()
-                if pf_vals[k, j+1] < pf:
                     pf_vals[k, j+1] = pf
     journey_time = 10**10
     for i in range(len(earliest_time[-1, :])):
@@ -123,7 +122,6 @@ def min_time_calculate(route, wind_fname, time, craft):
         et = datetime.fromtimestamp(earliest_time[-1, i]) + travel_time
         if datetime.fromtimestamp(journey_time) > et:
             journey_time = time.timestamp()
-        if pf_vals[k, j+1] < pf:
             pf_vals[k, j+1] = pf
     return journey_time, earliest_time, pf_vals
 
@@ -168,7 +166,7 @@ def timestamp_to_delta_time(start, x):
 
 
 def plot_mt_route(start, route, x, y, et, jt, fname):
-    """Plot output from routing simulations."""
+    """Plot minimum time output from routing simulations."""
     x_locs, y_locs, et_s = earliest_time_locations(x, y, et)
     vt = datetime.fromtimestamp(jt) - start
     add_param = 2
@@ -182,7 +180,6 @@ def plot_mt_route(start, route, x, y, et, jt, fname):
                   llcrnrlat=y.min()-add_param,
                   urcrnrlon=x.max()+add_param,
                   urcrnrlat=y.max()+add_param,
-                  # lat_ts=(y.min() + y.max())/2,
                   resolution=res)  # f = fine resolution
     map.drawcoastlines()
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
@@ -206,6 +203,7 @@ def plot_mt_route(start, route, x, y, et, jt, fname):
 
 
 def plot_reliability_route(start, route, x, y, pf_vals, jt, fname):
+    """Plot reliability predictions from routing."""
     plt.figure(figsize=(6, 10))
     res = 'i'
     add_param = 2
@@ -218,36 +216,18 @@ def plot_reliability_route(start, route, x, y, pf_vals, jt, fname):
                   urcrnrlon=x.max()+add_param,
                   urcrnrlat=y.max()+add_param,
                   # lat_ts=(y.min() + y.max())/2,
-                  resolution=res)  #f = fine resolution
+                  resolution=res)  #  f = fine resolution
     map.drawcoastlines()
     x, y = map(x, y)
-    ctf = map.contourf(x, y, pf_vals, cmap='Reds')
+    ctf = map.contourf(x, y, pf_vals, cmap='Reds', vmin=0, vmax=1)
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x_locs_pf, y_locs_pf, pf_min = minimum_pf_locations(x, y, pf_vals)
-    x_locs_pf, y_locs_pf = map(x_locs_pf, y_locs_pf)
-    plt.title("Reliability plot")
-    map.plot(x_locs_pf, y_locs_pf, label='minimum pf path')
-    cbar = plt.colorbar(ctf, orientation='horizontal')
+    # map.scatter(x_locs_pf, y_locs_pf, color='green', s=20,
+                # label='Minimum pf path')
+    cbar = plt.colorbar(ctf, orientation='horizontal', boundaries=np.linspace(0, 1, 10))
+    cbar.set_label(r'$p_f$')
     plt.savefig(fname+"reliability"+".png")
     plt.clf()
-
-
-
-if __name__ == '__main__':
-    start = Location(-14.0, 47.0)
-    finish = Location(-6.0, 47.0)
-    craft = return_boat_perf()
-    r = Route(start, finish, 10, 10, 30000.0, craft)
-    wind_fname = "/Users/thomasdickson/Documents/sail_routing/routing/domain_application/data_dir/wind_forecast.nc"
-    time = datetime(2014, 7, 1, 0, 0)
-    x, y, land = return_co_ords(r.start.long, r.finish.long,
-                                r.start.lat, r.finish.lat,
-                                r.n_ranks, r.n_width,
-                                r.d_node)
-    jt, et, pf_vals = min_time_calculate(r, wind_fname, time, craft)
-    vt = datetime.fromtimestamp(jt) - time
-    print("Journey time is: ", vt)
-    plot_route(time, r, x, y, et, jt)
