@@ -8,9 +8,10 @@ import numpy as np
 import datetime
 from datetime import datetime
 from datetime import timedelta
+
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
-from matplotlib import cm
+from numba import jit
 
 plt.rcParams['savefig.dpi'] = 400
 plt.rcParams['figure.autolayout'] = False
@@ -27,12 +28,13 @@ plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
                                          \\usepackage{type1cm}"""
 
-
+from sail_route.time_func import do_cprofile, do_profile
 from sail_route.route.grid_locations import return_co_ords
 from sail_route.performance.craft_performance import return_boat_perf
 from sail_route.performance.cost_function import cost_function
 from sail_route.weather.weather_assistance import prepare_wind_data, \
-                                       interpolate_weather_data
+                                       interpolate_weather_data, \
+                                       setup_interpolator
 
 
 class Location(object):
@@ -57,6 +59,7 @@ class Route:
         self.craft = craft
 
 
+@jit
 def return_domain(route, wind_fname):
     """Return the node locations and weather conditions."""
     x, y, land = return_co_ords(route.start.long, route.finish.long,
@@ -67,63 +70,66 @@ def return_domain(route, wind_fname):
     return x, y, land, tws, twd
 
 
-def start_to_first_rank(route, wind_fname, time, craft):
-    """Calculate the earliest arrival time at the first rank."""
+@do_profile()
+def min_time_calculate(route, wind_fname, time, craft):
+    """Calculate the earliest arrival time across co-ordinates."""
     x, y, land, tws, twd = return_domain(route, wind_fname)
     pf_vals = np.zeros_like(x)
-    earliest_time = np.full_like(x, np.inf)
-    for i in range(len(earliest_time[:, 0])):
+    earl_time = np.full_like(x, np.inf)
+    tws_interp = setup_interpolator(tws)
+    twd_interp = setup_interpolator(twd)
+    journey_time = 10**10
+
+    # first row
+    for i in range(route.n_width):
         if land[i, 0] is True:
-            earliest_time[i, 0] == np.inf
-        i_tws, i_twd = interpolate_weather_data(x[i, 0], y[i, 0], time, tws,
-                                                twd)
+            earl_time[i, 0] == np.inf
+        i_tws = tws_interp([x[i, 0], y[i, 0], time]).data
+        i_twd = twd_interp([x[i, 0], y[i, 0], time]).data
         travel_time, pf = cost_function(route.start.long,
                                         route.start.lat,
                                         x[i, 0], y[i, 0],
                                         i_tws, i_twd, craft)
         total_time = time + travel_time
         pf_vals[i, :] = pf
-        earliest_time[i, 0] = total_time.strftime('%s')
-    return x, y, land, earliest_time, pf_vals, tws, twd
+        earl_time[i, 0] = total_time.timestamp()
 
+    # middle section
+    for j in range(route.n_ranks-1):
+        for i in range(route.n_width):
+            utime = datetime.fromtimestamp(earl_time[i, j])
+            i_tws = tws_interp([x[i, j], y[i, j], time]).data
+            i_twd = twd_interp([x[i, j], y[i, j], time]).data
+            lifetime = utime - time
+            for k in range(route.n_width):
+                    if land[k, j+1] is True:
+                        earl_time[k, j+1] == np.inf
+                    else:
+                        travel_time, pf = cost_function(x[i, j],
+                                                        y[i, j],
+                                                        x[k, j+1],
+                                                        y[k, j+1],
+                                                        i_tws, i_twd,
+                                                        craft,
+                                                        lifetime)
+                    jt = utime + travel_time
+                    if jt.timestamp() < earl_time[k, j+1]:
+                        earl_time[k, j+1] = jt.timestamp()
+                        pf_vals[k, j+1] = pf
 
-def min_time_calculate(route, wind_fname, time, craft):
-    """Calculate the earliest arrival time across co-ordinates."""
-    x, y, land, earliest_time, pf_vals, tws, twd = start_to_first_rank(route, wind_fname, time, craft)
-    for j in range(len(earliest_time[0, :])-1):
-        for i in range(len(earliest_time[:, 0])):
-            for k in range(len(earliest_time[:, 0])):
-                # if land[i, j] is True:
-                #     time_l == 10**10
-                #     if time_l > earliest_time[i, j+1]:
-                #         earliest_time[i, j+1] == time_l
-                utime = datetime.fromtimestamp(earliest_time[i, j])
-                i_tws, i_twd = interpolate_weather_data(x[i, j], y[i, j],
-                                                        time, tws, twd)
-                lifetime = utime - time
-                travel_time, pf = cost_function(x[i, j], y[i, j],
-                                                x[k, j+1],
-                                                y[k, j+1],
-                                                i_tws, i_twd, craft,
-                                                lifetime)
-                jt = utime + travel_time
-                if jt.timestamp() < earliest_time[k, j+1]:
-                    earliest_time[k, j+1] = jt.timestamp()
-                    pf_vals[k, j+1] = pf
-    journey_time = 10**10
-    for i in range(len(earliest_time[-1, :])):
-        time = datetime.fromtimestamp(earliest_time[i, j])
-        i_tws, i_twd = interpolate_weather_data(x[i, j], y[i, j],
-                                                time, tws, twd)
+    for i in range(route.n_width):
+        time = datetime.fromtimestamp(earl_time[-1, i])
+        i_tws = tws_interp([x[-1, i], y[-1, i], time]).data
+        i_twd = twd_interp([x[-1, i], y[-1, i], time]).data
         travel_time, pf = cost_function(x[-1, i], y[-1, i],
                                         route.finish.long,
                                         route.finish.lat,
                                         i_tws, i_twd, craft)
-        et = datetime.fromtimestamp(earliest_time[-1, i]) + travel_time
+        et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
         if datetime.fromtimestamp(journey_time) > et:
-            journey_time = time.timestamp()
-            pf_vals[k, j+1] = pf
-    return journey_time, earliest_time, pf_vals
+            journey_time = et.timestamp()
+            pf_vals[-1, i] = pf
+    return journey_time, earl_time, pf_vals
 
 
 def min_vals(x, y, et):

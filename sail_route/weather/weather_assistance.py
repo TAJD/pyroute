@@ -111,6 +111,14 @@ def prepare_wind_data(fname):
     return windspeed, uwind
 
 
+def setup_interpolator(cube):
+    """Return interpolator for lat, long and time for cube."""
+    if cube is 0.0:
+        return 0.0
+    interp = iris.analysis.Linear().interpolator(cube, ['longitude', 'latitude', 'time'])
+    return interp
+
+
 def interpolate_weather_data(long, lat, time, ws, wa):
     """Interpolate weather data at specific points."""
     ws_interp = ws.interpolate([('longitude', long), ('latitude', lat), ['time', time]], iris.analysis.Linear())

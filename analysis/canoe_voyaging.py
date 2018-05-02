@@ -7,7 +7,8 @@ thomas.dickson@soton.ac.uk
 
 from context import sail_route
 import numpy as np
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
+from sail_route.time_func import timefunc, do_cprofile
 from sail_route.weather.weather_assistance import download_wind, plot_wind_data, generate_gif
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route, \
@@ -52,10 +53,10 @@ def run_simulation():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 15
-    node_distance = (haversine(tahiti.long, tahiti.lat, marquesas.long,
-                               marquesas.lat)/0.5399565)/no_nodes
-    # print(node_distance)
+    no_nodes = 35
+    dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
+                               marquesas.lat)
+    node_distance = (dist/0.5399565)/no_nodes
     r = Route(tahiti, marquesas, no_nodes, no_nodes,
               node_distance*1000.0, craft)
     wind_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wind_forecast.nc"
