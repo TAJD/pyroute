@@ -11,7 +11,6 @@ import iris.coord_categorisation
 import cartopy.crs as ccrs
 
 
-
 def download_wind(path, N, W, S, E):
     """Download wind data."""
     server = ECMWFDataServer()
@@ -96,7 +95,7 @@ def generate_gif(folder, name):
 
 
 def prepare_wind_data(fname):
-    """From downloaded wind data get the weather at each node."""
+    """Return wind direction and speed from V and U components."""
     vwind = iris.load_cube(fname, '10 metre V wind component')
     uwind = iris.load_cube(fname, '10 metre U wind component')
     windspeed = 1.943844 * (uwind ** 2 + vwind ** 2) ** 0.5
@@ -111,16 +110,17 @@ def prepare_wind_data(fname):
     return windspeed, uwind
 
 
+def prepare_wave_data(fname):
+    """Return cubes containing wave direction, wave height and wave period."""
+
+    return wd, wh, wp
+
+
 def setup_interpolator(cube):
     """Return interpolator for lat, long and time for cube."""
     if cube is 0.0:
         return 0.0
-    interp = iris.analysis.Linear().interpolator(cube, ['longitude', 'latitude', 'time'])
+    interp = iris.analysis.Linear().interpolator(cube, ['longitude',
+                                                        'latitude',
+                                                        'time'])
     return interp
-
-
-def interpolate_weather_data(long, lat, time, ws, wa):
-    """Interpolate weather data at specific points."""
-    ws_interp = ws.interpolate([('longitude', long), ('latitude', lat), ['time', time]], iris.analysis.Linear())
-    wa_interp = wa.interpolate([('longitude', long), ('latitude', lat), ['time', time]], iris.analysis.Linear())
-    return ws_interp.data, wa_interp.data

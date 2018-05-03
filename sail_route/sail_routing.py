@@ -17,8 +17,8 @@ from sail_route.route.grid_locations import return_co_ords
 from sail_route.performance.craft_performance import return_boat_perf
 from sail_route.performance.cost_function import cost_function
 from sail_route.weather.weather_assistance import prepare_wind_data, \
-                                       interpolate_weather_data, \
-                                       setup_interpolator
+                                       setup_interpolator, \
+                                       prepare_wave_data
 
 plt.rcParams['savefig.dpi'] = 100
 plt.rcParams['figure.autolayout'] = False
@@ -58,27 +58,29 @@ class Route:
 
 
 @jit
-def return_domain(route, wind_fname):
+def return_domain(route, wind_fname, waves_fname):
     """Return the node locations and weather conditions."""
     x, y, land = return_co_ords(route.start.long, route.finish.long,
                                 route.start.lat, route.finish.lat,
                                 route.n_ranks, route.n_width,
                                 route.d_node)
     tws, twd = prepare_wind_data(wind_fname)
-    return x, y, land, tws, twd
+    wd, wh, wp = prepare_wave_data(waves_fname)
+    return x, y, land, tws, twd, wd, wh, wp
 
 
 @timefunc
-def min_time_calculate(route, wind_fname, time, craft):
+def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
     """Calculate the earliest arrival time across co-ordinates."""
-    x, y, land, tws, twd = return_domain(route, wind_fname)
     pf_vals = np.zeros_like(x)
     earl_time = np.full_like(x, np.inf)
     tws_interp = setup_interpolator(tws)
     twd_interp = setup_interpolator(twd)
+    wd_interp = setup_interpolator(wd)
+    wh_interp = setup_interpolator(wh)
+    wp_interp = setup_interpolator(wp)
     journey_time = 10**10
 
-    # first row
     for i in range(route.n_width):
         if land[i, 0] is True:
             earl_time[i, 0] == np.inf
@@ -92,7 +94,6 @@ def min_time_calculate(route, wind_fname, time, craft):
         pf_vals[i, :] = pf
         earl_time[i, 0] = total_time.timestamp()
 
-    # middle section
     for j in range(route.n_ranks-1):
         for i in range(route.n_width):
             utime = datetime.fromtimestamp(earl_time[i, j])

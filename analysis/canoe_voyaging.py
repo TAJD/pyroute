@@ -12,11 +12,10 @@ from sail_route.time_func import timefunc, do_cprofile
 from sail_route.weather.weather_assistance import download_wind, plot_wind_data, generate_gif
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route, \
-                                   plot_reliability_route
+                                   plot_reliability_route, return_domain
 from sail_route.performance.craft_performance import polar
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
-from sail_route.time_func import timefunc
 
 
 def datetime_range(start, end, delta):
@@ -54,14 +53,14 @@ def run_simulation():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 45
-    print(no_nodes)
+    no_nodes = 20
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
-                               marquesas.lat)
+                              marquesas.lat)
     node_distance = (dist/0.5399565)/no_nodes
     r = Route(tahiti, marquesas, no_nodes, no_nodes,
               node_distance*1000.0, craft)
     wind_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wind_forecast.nc"
+    waves_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wave_data.nc"
     diagram_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
     sd = datetime(2014, 7, 1, 0, 0)
     ed = datetime(2014, 7, 2, 0, 0)
@@ -70,7 +69,11 @@ def run_simulation():
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
-        jt, et, pf_vals = min_time_calculate(r, wind_fname, t, craft)
+        x, y, land, tws, twd, wd, wh, wp = return_domain(r,
+                                                         wind_fname,
+                                                         waves_fname)
+        jt, et, pf_vals = min_time_calculate(r, t, craft, x, y, land,
+                                             tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
         plot_mt_route(t, r, x, y, et, jt, diagram_path+"/"+str(t))
