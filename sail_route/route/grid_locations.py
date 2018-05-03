@@ -20,8 +20,10 @@ from numba import njit, jit
 from mpl_toolkits.basemap import Basemap
 import pyproj
 from shapely.geometry import Point
+from numba import jit
 
 
+@jit
 def line_points(x, y, n_nodes, dist):
     """Calculate the locations of the points along a rank."""
     p_ll = pyproj.Proj(init='epsg:4326')
@@ -40,7 +42,7 @@ def line_points(x, y, n_nodes, dist):
 
 def gen_grid(start_long, finish_long, start_lat, finish_lat,
              n_ranks=10, n_nodes=10, dist=5000):
-    """Function to return grid between start and finish."""
+    """Return grid between start and finish."""
     g = pyproj.Geod(ellps='clrk66')
     azimuths = g.inv(start_long, start_lat, finish_long, finish_lat)
     rot = azimuths[0]-90.0
@@ -61,8 +63,10 @@ def check_land(grid):
     return points
 
 
+@jit
 def return_co_ords(start_long, finish_long, start_lat, finish_lat,
                    n_ranks=10, n_nodes=10, dist=5000):
+    """Return grid co-ordinates between start and finish."""
     grid = gen_grid(start_long, finish_long, start_lat, finish_lat,
                     n_ranks, n_nodes, dist)
     land = check_land(grid)

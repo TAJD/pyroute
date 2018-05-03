@@ -12,8 +12,15 @@ from datetime import timedelta
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from numba import jit
+from sail_route.time_func import do_cprofile, do_profile, timefunc
+from sail_route.route.grid_locations import return_co_ords
+from sail_route.performance.craft_performance import return_boat_perf
+from sail_route.performance.cost_function import cost_function
+from sail_route.weather.weather_assistance import prepare_wind_data, \
+                                       interpolate_weather_data, \
+                                       setup_interpolator
 
-plt.rcParams['savefig.dpi'] = 400
+plt.rcParams['savefig.dpi'] = 100
 plt.rcParams['figure.autolayout'] = False
 plt.rcParams['figure.figsize'] = 10, 6
 plt.rcParams['axes.labelsize'] = 14
@@ -27,15 +34,6 @@ plt.rcParams['font.family'] = "serif"
 plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
                                          \\usepackage{type1cm}"""
-
-from sail_route.time_func import do_cprofile, do_profile
-from sail_route.route.grid_locations import return_co_ords
-from sail_route.performance.craft_performance import return_boat_perf
-from sail_route.performance.cost_function import cost_function
-from sail_route.weather.weather_assistance import prepare_wind_data, \
-                                       interpolate_weather_data, \
-                                       setup_interpolator
-
 
 class Location(object):
     "Location"
@@ -70,7 +68,7 @@ def return_domain(route, wind_fname):
     return x, y, land, tws, twd
 
 
-@do_profile()
+@timefunc
 def min_time_calculate(route, wind_fname, time, craft):
     """Calculate the earliest arrival time across co-ordinates."""
     x, y, land, tws, twd = return_domain(route, wind_fname)

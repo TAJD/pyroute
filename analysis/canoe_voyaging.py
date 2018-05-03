@@ -16,6 +16,7 @@ from sail_route.sail_routing import Location, Route, \
 from sail_route.performance.craft_performance import polar
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
+from sail_route.time_func import timefunc
 
 
 def datetime_range(start, end, delta):
@@ -53,7 +54,8 @@ def run_simulation():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 35
+    no_nodes = 45
+    print(no_nodes)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                                marquesas.lat)
     node_distance = (dist/0.5399565)/no_nodes

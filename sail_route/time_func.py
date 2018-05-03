@@ -1,3 +1,5 @@
+"""Functions to assist the timing and profiling of functions."""
+
 import time
 import cProfile
 
@@ -7,7 +9,7 @@ def timefunc(f):
         start = time.time()
         result = f(*args, **kwargs)
         end = time.time()
-        print(f.__name__, 'took', end - start, 'time')
+        print(f.__name__, 'took {0:2f} seconds'.format(end - start))
         return result
     return f_timer
 
