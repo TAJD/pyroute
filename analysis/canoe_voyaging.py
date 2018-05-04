@@ -7,6 +7,7 @@ thomas.dickson@soton.ac.uk
 
 from context import sail_route
 import numpy as np
+import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from sail_route.time_func import timefunc, do_cprofile
 from sail_route.weather.weather_assistance import download_wind, plot_wind_data, generate_gif
@@ -16,7 +17,7 @@ from sail_route.sail_routing import Location, Route, \
 from sail_route.performance.craft_performance import polar
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
-
+from grid_error import calc_h
 
 def datetime_range(start, end, delta):
     """Generate range of dates."""
@@ -89,19 +90,30 @@ def grid_error():
     craft = load_tongiaki_perf()
     wind_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wind_forecast.nc"
     waves_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wave_data.nc"
-    diagram_path = "/home/thomas/Documents/pyroute/analysis/poly_data"
+    diagram_path = "/home/thomas/Documents/pyroute/analysis/poly_data/"
     sd = datetime(2014, 7, 1, 0, 0)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
     tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
-    for i in range(20, 53, 4):
-        print(i)
-        node_distance = (dist/0.5399565)/i
-        r = Route(tahiti, marquesas, i, i,
+    nodes = np.array([i**2 for i in range(6, 9)])
+    times = []
+    h_vals = []
+    for count, node in enumerate(nodes):
+        node_distance = (dist/0.5399565)/node
+        r = Route(tahiti, marquesas, node, node,
                   node_distance*1000.0, craft)
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
+        jt, et, pf_vals = min_time_calculate(r, sd, craft, x, y, land,
+                                             tws, twd, wd, wh, wp)
+        h_vals.append(calc_h(node, node_distance**2))
+        vt = datetime.fromtimestamp(jt) - sd
+        times.append(vt.total_seconds())
+    h_vals, times = np.array(h_vals), np.array(times)
+    with open(diagram_path+"grid_output.txt", 'wb') as f:
+        np.savetxt(f, np.c_[h_vals, times], delimiter='\t')
+
 
 
 
