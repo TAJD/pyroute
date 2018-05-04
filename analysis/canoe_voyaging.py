@@ -28,40 +28,41 @@ def datetime_range(start, end, delta):
         current += delta
 
 
+
 def download_wind_poly():
     """Download representative wind scenario."""
-    path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
+    path = "/home/thomas/Documents/pyroute/analysis/poly_data"
     download_wind(path, -10, -150.0, -18.0, -135.0)
 
 
 def plot_wind():
     """Plot representative wind scenario."""
-    path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/"
+    path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/"
     plot_wind_data(path, path+"/wind_forecast.nc")
     generate_gif(path, "Polynesian_July")
 
 
 def load_tongiaki_perf():
     """Load predicted Tongiaki voyaging canoe performance."""
-    perf = np.genfromtxt("/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
+    perf = np.genfromtxt("/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
     twa = np.array([60, 70, 80, 90, 100, 110, 120])
     return polar(twa, tws, perf, 0.0)
 
 
-def run_simulation():
+def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 20
+    no_nodes = 50
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
     node_distance = (dist/0.5399565)/no_nodes
     r = Route(tahiti, marquesas, no_nodes, no_nodes,
               node_distance*1000.0, craft)
-    wind_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wind_forecast.nc"
-    waves_fname = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/wave_data.nc"
-    diagram_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
+    wind_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wind_forecast.nc"
+    waves_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wave_data.nc"
+    diagram_path = "/home/thomas/Documents/pyroute/analysis/poly_data"
     sd = datetime(2014, 7, 1, 0, 0)
     ed = datetime(2014, 7, 2, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
@@ -69,9 +70,7 @@ def run_simulation():
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
-        x, y, land, tws, twd, wd, wh, wp = return_domain(r,
-                                                         wind_fname,
-                                                         waves_fname)
+        tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
         jt, et, pf_vals = min_time_calculate(r, t, craft, x, y, land,
                                              tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
@@ -79,7 +78,37 @@ def run_simulation():
         plot_mt_route(t, r, x, y, et, jt, diagram_path+"/"+str(t))
         plot_reliability_route(t, r, x, y, pf_vals, jt, diagram_path+"/"+str(t))
 
+
+def grid_error():
+    """Perform grid error study for routing given real weather.
+
+    Return a plot of the difference between results as a function
+    of grid error."""
+    tahiti = Location(-149.426, -17.651)
+    marquesas = Location(-139.33, -9)
+    craft = load_tongiaki_perf()
+    wind_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wind_forecast.nc"
+    waves_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wave_data.nc"
+    diagram_path = "/home/thomas/Documents/pyroute/analysis/poly_data"
+    sd = datetime(2014, 7, 1, 0, 0)
+    dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
+                              marquesas.lat)
+    tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
+    for i in range(20, 53, 4):
+        print(i)
+        node_distance = (dist/0.5399565)/i
+        r = Route(tahiti, marquesas, i, i,
+                  node_distance*1000.0, craft)
+        x, y, land = return_co_ords(r.start.long, r.finish.long,
+                                    r.start.lat, r.finish.lat,
+                                    r.n_ranks, r.n_width, r.d_node)
+
+
+
 if __name__ == '__main__':
     # download_wind_poly()
     # plot_wind()
-    run_simulation()
+    # for i in range(20, 30, 1):
+    #     print(i)
+    # run_simulation_over_days()
+    grid_error()

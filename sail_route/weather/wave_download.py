@@ -4,22 +4,20 @@ Thomas Dickson
 thomas.dickson@soton.ac.uk
 30/04/2018
 """
+import iris
+
+# from ecmwfapi import ECMWFDataServer
 
 
-from ecmwfapi import ECMWFDataServer
-server = ECMWFDataServer()
+def prepare_wave_data(fname):
+    """Return cubes of wave height, wave direction and wave period from cubes."""
+    wh = iris.load_cube(fname, 'Significant height of combined wind waves and swell')
+    wd = iris.load_cube(fname, 'Mean wave direction')
+    wp = iris.load_cube(fname, 'Mean wave period')
+    return wd, wh, wp
 
-path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data"
 
-server.retrieve({
-    "class": "e4",
-    "dataset": "era40",
-    "date": "2002-07-01/to/2002-07-31",
-    "levtype": "sfc",
-    "param": "229.140/230.140/232.140",
-    "step": "0",
-    "stream": "wave",
-    "time": "00:00:00/06:00:00/12:00:00/18:00:00",
-    'format': "netcdf",
-    'target': path+"/data_dir/wave_data.nc"
-})
+
+if __name__ == '__main__':
+    fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wave_data.nc"
+    print(prepare_wave_data(fname))

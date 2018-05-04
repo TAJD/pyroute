@@ -43,7 +43,8 @@ def craft_failure_model(time, tws, twa):
 
 
 @jit(cache=True)
-def cost_function(x1, y1, x2, y2, tws, twd, craft, lifetime=None):
+def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
+                  craft, lifetime=None):
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
     twa = bearing - twd

@@ -8,19 +8,21 @@ import numpy as np
 import datetime
 from datetime import datetime
 from datetime import timedelta
+import warnings
 
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from numba import jit
-from sail_route.time_func import do_cprofile, do_profile, timefunc
+from sail_route.time_func import timefunc
 from sail_route.route.grid_locations import return_co_ords
-from sail_route.performance.craft_performance import return_boat_perf
 from sail_route.performance.cost_function import cost_function
 from sail_route.weather.weather_assistance import prepare_wind_data, \
                                        setup_interpolator, \
                                        prepare_wave_data
+warnings.filterwarnings("ignore")
 
-plt.rcParams['savefig.dpi'] = 100
+
+plt.rcParams['savefig.dpi'] = 300
 plt.rcParams['figure.autolayout'] = False
 plt.rcParams['figure.figsize'] = 10, 6
 plt.rcParams['axes.labelsize'] = 14
@@ -30,10 +32,11 @@ plt.rcParams['lines.linewidth'] = 2.0
 plt.rcParams['lines.markersize'] = 8
 plt.rcParams['legend.fontsize'] = 12
 plt.rcParams['text.usetex'] = True
-plt.rcParams['font.family'] = "serif"
+# plt.rcParams['font.family'] = "serif"
 plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
                                          \\usepackage{type1cm}"""
+
 
 class Location(object):
     "Location"
@@ -58,15 +61,11 @@ class Route:
 
 
 @jit
-def return_domain(route, wind_fname, waves_fname):
+def return_domain(wind_fname, waves_fname):
     """Return the node locations and weather conditions."""
-    x, y, land = return_co_ords(route.start.long, route.finish.long,
-                                route.start.lat, route.finish.lat,
-                                route.n_ranks, route.n_width,
-                                route.d_node)
     tws, twd = prepare_wind_data(wind_fname)
     wd, wh, wp = prepare_wave_data(waves_fname)
-    return x, y, land, tws, twd, wd, wh, wp
+    return tws, twd, wd, wh, wp
 
 
 @timefunc
@@ -86,10 +85,15 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
             earl_time[i, 0] == np.inf
         i_tws = tws_interp([x[i, 0], y[i, 0], time]).data
         i_twd = twd_interp([x[i, 0], y[i, 0], time]).data
+        i_wd = wd_interp([x[i, 0], y[i, 0], time]).data
+        i_wh = wh_interp([x[i, 0], y[i, 0], time]).data
+        i_wp = wp_interp([x[i, 0], y[i, 0], time]).data
         travel_time, pf = cost_function(route.start.long,
                                         route.start.lat,
                                         x[i, 0], y[i, 0],
-                                        i_tws, i_twd, craft)
+                                        i_tws, i_twd,
+                                        i_wd, i_wh, i_wp,
+                                        craft)
         total_time = time + travel_time
         pf_vals[i, :] = pf
         earl_time[i, 0] = total_time.timestamp()
@@ -97,6 +101,9 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
     for j in range(route.n_ranks-1):
         for i in range(route.n_width):
             utime = datetime.fromtimestamp(earl_time[i, j])
+            i_wd = wd_interp([x[i, j], y[i, j], time]).data
+            i_wh = wh_interp([x[i, j], y[i, j], time]).data
+            i_wp = wp_interp([x[i, j], y[i, j], time]).data
             i_tws = tws_interp([x[i, j], y[i, j], time]).data
             i_twd = twd_interp([x[i, j], y[i, j], time]).data
             lifetime = utime - time
@@ -109,6 +116,7 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
                                                         x[k, j+1],
                                                         y[k, j+1],
                                                         i_tws, i_twd,
+                                                        i_wd, i_wh, i_wp,
                                                         craft,
                                                         lifetime)
                     jt = utime + travel_time
@@ -123,7 +131,10 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
         travel_time, pf = cost_function(x[-1, i], y[-1, i],
                                         route.finish.long,
                                         route.finish.lat,
-                                        i_tws, i_twd, craft)
+                                        i_tws, i_twd,
+                                        i_wd, i_wh, i_wp,
+                                        craft,
+                                        lifetime)
         et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
         if datetime.fromtimestamp(journey_time) > et:
             journey_time = et.timestamp()

@@ -4,11 +4,12 @@ import os
 import iris
 import numpy as np
 from mpl_toolkits import basemap
-from ecmwfapi import ECMWFDataServer
+# from ecmwfapi import ECMWFDataServer
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import iris.coord_categorisation
 import cartopy.crs as ccrs
+from numba import jit
 
 
 def download_wind(path, N, W, S, E):
@@ -32,19 +33,23 @@ def download_wind(path, N, W, S, E):
     })
 
 
-def regrid_data(fname, x, y):
-    """Regrid forecast data to the points the route is being solved over."""
-    with Dataset(fname, mode='r') as fh:
-        print(fh)
-        lons = np.array(fh.variables['longitude'])
-        lats = np.array(fh.variables['latitude'])
-        u10 = np.array(fh.variables['u10'][1])
-        v10 = np.array(fh.variables['v10'][1])
-    print(lons)
-    print(lats)
-    regridded_u = basemap.interp(u10, lons, lats, x, y, order=1)
-    regridded_v = basemap.interp(v10, lons, lats, x, y, order=1)
-    return regridded_u, regridded_v
+def download_wave_date(path, N, W, S, E):
+    """Download wave data."""
+    server = ECMWFDataServer()
+
+    server.retrieve({
+        "class": "e4",
+        "dataset": "era40",
+        "date": "2002-07-01/to/2002-07-31",
+        "levtype": "sfc",
+        "param": "229.140/230.140/232.140",
+        "step": "0",
+        "stream": "wave",
+        "time": "00:00:00/06:00:00/12:00:00/18:00:00",
+        'area': str(N) + "/" + str(W) + "/" + str(S) + "/" + str(E),
+        'format': "netcdf",
+        'target': path+"/data_dir/wave_data.nc"
+    })
 
 
 def plot_wind_data(folder, fname):
@@ -94,6 +99,7 @@ def generate_gif(folder, name):
             os.remove(os.path.join(folder, item))
 
 
+@jit(cache=True)
 def prepare_wind_data(fname):
     """Return wind direction and speed from V and U components."""
     vwind = iris.load_cube(fname, '10 metre V wind component')
@@ -110,12 +116,16 @@ def prepare_wind_data(fname):
     return windspeed, uwind
 
 
+@jit(cache=True)
 def prepare_wave_data(fname):
-    """Return cubes containing wave direction, wave height and wave period."""
-
+    """Return cubes of wave height, wave direction and wave period from cubes."""
+    wh = iris.load_cube(fname, 'Significant height of combined wind waves and swell')
+    wd = iris.load_cube(fname, 'Mean wave direction')
+    wp = iris.load_cube(fname, 'Mean wave period')
     return wd, wh, wp
 
 
+@jit(cache=True)
 def setup_interpolator(cube):
     """Return interpolator for lat, long and time for cube."""
     if cube is 0.0:
