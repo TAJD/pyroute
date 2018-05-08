@@ -95,7 +95,7 @@ def grid_error():
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
     tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
-    nodes = np.array([i**2 for i in range(6, 9)])
+    nodes = np.array([i**2 for i in range(9, 12)])
     times = []
     h_vals = []
     for count, node in enumerate(nodes):
@@ -111,7 +111,7 @@ def grid_error():
         vt = datetime.fromtimestamp(jt) - sd
         times.append(vt.total_seconds())
     h_vals, times = np.array(h_vals), np.array(times)
-    with open(diagram_path+"grid_output.txt", 'wb') as f:
+    with open(diagram_path+"grid_output_9_10_11.txt", 'wb') as f:
         np.savetxt(f, np.c_[h_vals, times], delimiter='\t')
 
 
