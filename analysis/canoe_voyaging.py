@@ -115,8 +115,6 @@ def grid_error():
         np.savetxt(f, np.c_[h_vals, times], delimiter='\t')
 
 
-
-
 if __name__ == '__main__':
     # download_wind_poly()
     # plot_wind()
