@@ -4,7 +4,7 @@ import os
 import iris
 import numpy as np
 from mpl_toolkits import basemap
-# from ecmwfapi import ECMWFDataServer
+from ecmwfapi import ECMWFDataServer
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import iris.coord_categorisation
