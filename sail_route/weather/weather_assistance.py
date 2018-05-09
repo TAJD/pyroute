@@ -3,53 +3,10 @@ import subprocess
 import os
 import iris
 import numpy as np
-from mpl_toolkits import basemap
-from ecmwfapi import ECMWFDataServer
-from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import iris.coord_categorisation
 import cartopy.crs as ccrs
 from numba import jit
-
-
-def download_wind(path, N, W, S, E):
-    """Download wind data."""
-    server = ECMWFDataServer()
-    server.retrieve({
-        'stream': "oper",
-        'levtype': "sfc",
-        'param': "165.128/166.128/167.128",
-        'dataset': "interim",
-        'step': "0",
-        'grid': "0.75/0.75",
-        'time': "00/06/12/18",
-        'date': "2014-07-01/to/2014-07-14",
-        'type': "an",
-        'class': "ei",
-        #area:  N/W/S/E
-        'area': str(N) + "/" + str(W) + "/" + str(S) + "/" + str(E),
-        'format': "netcdf",
-        'target': path+"/data_dir/wind_forecast.nc"
-    })
-
-
-def download_wave_date(path, N, W, S, E):
-    """Download wave data."""
-    server = ECMWFDataServer()
-
-    server.retrieve({
-        "class": "e4",
-        "dataset": "era40",
-        "date": "2002-07-01/to/2002-07-31",
-        "levtype": "sfc",
-        "param": "229.140/230.140/232.140",
-        "step": "0",
-        "stream": "wave",
-        "time": "00:00:00/06:00:00/12:00:00/18:00:00",
-        'area': str(N) + "/" + str(W) + "/" + str(S) + "/" + str(E),
-        'format': "netcdf",
-        'target': path+"/data_dir/wave_data.nc"
-    })
 
 
 def plot_wind_data(folder, fname):

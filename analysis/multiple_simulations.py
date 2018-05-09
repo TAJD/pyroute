@@ -18,6 +18,7 @@ from sail_route.sail_routing import Location, Route, min_time_calculate, \
 from sail_route.performance.craft_performance import return_boat_perf
 from sail_route.route.grid_locations import return_co_ords
 
+home_path = "/home/td7g11/pyroute/"
 
 def run_simulation():
     start = Location(-14.0, 47.0)

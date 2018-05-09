@@ -19,9 +19,8 @@ import numpy as np
 from numba import njit, jit
 from mpl_toolkits.basemap import Basemap
 import pyproj
-from shapely.geometry import Point
 from numba import jit
-
+from shapely.geometry import Point
 
 @jit
 def line_points(x, y, n_nodes, dist):
