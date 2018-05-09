@@ -45,7 +45,8 @@ def plot_wind():
 
 def load_tongiaki_perf():
     """Load predicted Tongiaki voyaging canoe performance."""
-    perf = np.genfromtxt("/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
+    path = "/home/td7g11/pyroute/"
+    perf = np.genfromtxt(path+"analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
     twa = np.array([60, 70, 80, 90, 100, 110, 120])
     return polar(twa, tws, perf, 0.0)
@@ -85,17 +86,18 @@ def grid_error():
 
     Return a plot of the difference between results as a function
     of grid error."""
+    path = "/home/td7g11/pyroute/"
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    wind_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wind_forecast.nc"
-    waves_fname = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/wave_data.nc"
-    diagram_path = "/home/thomas/Documents/pyroute/analysis/poly_data/"
+    wind_fname = path+"analysis/poly_data/data_dir/wind_forecast.nc"
+    waves_fname = path+"analysis/poly_data/data_dir/wave_data.nc"
+    diagram_path = path+"analysis/poly_data/"
     sd = datetime(2014, 7, 1, 0, 0)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
     tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
-    nodes = np.array([i**2 for i in range(9, 12)])
+    nodes = np.array([i**2 for i in range(3, 4)])
     times = []
     h_vals = []
     for count, node in enumerate(nodes):

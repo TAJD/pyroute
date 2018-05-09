@@ -4,7 +4,7 @@ import os
 import iris
 import numpy as np
 from mpl_toolkits import basemap
-# from ecmwfapi import ECMWFDataServer
+#from ecmwfapi import ECMWFDataServer
 from netCDF4 import Dataset
 import matplotlib.pyplot as plt
 import iris.coord_categorisation
@@ -33,14 +33,14 @@ def download_wind(path, N, W, S, E):
     })
 
 
-def download_wave_date(path, N, W, S, E):
+def download_wave(path, N, W, S, E):
     """Download wave data."""
     server = ECMWFDataServer()
 
     server.retrieve({
         "class": "e4",
         "dataset": "era40",
-        "date": "2002-07-01/to/2002-07-31",
+        "date": "2014-07-01/to/2014-07-31",
         "levtype": "sfc",
         "param": "229.140/230.140/232.140",
         "step": "0",
@@ -134,3 +134,13 @@ def setup_interpolator(cube):
                                                         'latitude',
                                                         'time'])
     return interp
+
+if __name__ == '__main__':
+   print(os.path.isdir("/home/td7g11/pyroute/analysis/poly_data/data_dir/"))
+   N = 25.0
+   S = 20.0
+   W = -165.0
+   E = -160.0
+   path = "/home/td7g11/pyroute/analysis/poly_data"
+   download_wind(path, N, W, S, E)
+   download_wave(path, N, W, S, E)
