@@ -4,6 +4,8 @@ Thomas Dickson
 thomas.dickson@soton.ac.uk
 """
 
+import sys
+import inspect
 import numpy as np
 import datetime
 from datetime import datetime
@@ -14,11 +16,20 @@ from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
 from sail_route.time_func import timefunc
 from sail_route.route.grid_locations import gen_indx
-from sail_route.route.solve_route import shortest_path
+from sail_route.route.solve_route import shortest_path, get_locs
 from sail_route.performance.cost_function import cost_function
 from sail_route.weather.weather_assistance import return_domain, \
                                        setup_interpolator
 warnings.filterwarnings("ignore")
+
+def recompile_nb_code():
+    this_module = sys.modules[__name__]
+    module_members = inspect.getmembers(this_module)
+
+    for member_name, member in module_members:
+        if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
+            member.recompile()
+recompile_nb_code()
 
 
 plt.rcParams['savefig.dpi'] = 300
@@ -100,7 +111,6 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
             i_twd = twd_interp([x[i, j], y[i, j], time]).data
             lifetime = utime - time
             for k in range(route.n_width):
-                    print(indxs[k, j+1])
                     if land[k, j+1] is True:
                         earl_time[k, j+1] == np.inf
                     else:
@@ -120,10 +130,12 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
 
     for i in range(route.n_width):
         time = datetime.fromtimestamp(earl_time[i, -1])
-        print(indxs[i, -1])
-        i_tws = tws_interp([x[i, -1], y[i, -1], time]).data
-        i_twd = twd_interp([x[i, -1], y[i, -1], time]).data
-        travel_time, pf = cost_function(x[i, -1], y[i, -1],
+        i_tws = tws_interp([x[i, -1],
+                           y[i, -1], time]).data
+        i_twd = twd_interp([x[i, -1],
+                           y[i, -1], time]).data
+        travel_time, pf = cost_function(x[i, -1],
+                                        y[i, -1],
                                         route.finish.long,
                                         route.finish.lat,
                                         i_tws, i_twd,
@@ -135,10 +147,9 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
             journey_time = et.timestamp()
             pf_vals[i, -1] = pf
             end_node = indxs[i, -1]
-    print(indxs)
-    print(pindxs)
-    print(shortest_path(indxs, pindxs, [end_node]))
-    return journey_time, earl_time, pf_vals
+    sp = shortest_path(indxs, pindxs, [end_node])
+    x_route, y_route = get_locs(indxs, sp, x, y)
+    return journey_time, earl_time, pf_vals, x_route, y_route
 
 
 def min_vals(x, y, et):
@@ -171,9 +182,8 @@ def timestamp_to_delta_time(start, x):
     return round_timedelta(delta, timedelta(minutes=1))
 
 
-def plot_mt_route(start, route, x, y, et, jt, fname):
+def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     """Plot minimum time output from routing simulations."""
-    x_locs, y_locs, et_s = min_vals(x, y, et)
     vt = datetime.fromtimestamp(jt) - start
     add_param = 2
     res = 'i'
@@ -192,6 +202,8 @@ def plot_mt_route(start, route, x, y, et, jt, fname):
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
+    x_r, y_r = map(x_r, y_r)
+    map.plot(x_r, y_r, color='green')
     x, y = map(x, y)
     ctf = map.contourf(x, y, et, cmap='gray')
     cbar = plt.colorbar(ctf, orientation='horizontal')

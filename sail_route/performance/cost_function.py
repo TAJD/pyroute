@@ -63,6 +63,6 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     else:
         pf = 0.0
     if speed == 0.0:
-        return datetime.timedelta(hours=100), pf
+        return datetime.timedelta(hours=200), pf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed)), pf

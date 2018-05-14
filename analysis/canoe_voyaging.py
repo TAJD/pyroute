@@ -4,7 +4,6 @@ Thomas Dickson
 thomas.dickson@soton.ac.uk
 25/04/18
 """
-
 from context import sail_route
 import numpy as np
 from datetime import datetime, timedelta
@@ -52,7 +51,7 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    no_nodes = 3
+    no_nodes = 120
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
     node_distance = (dist/0.5399565)/no_nodes
@@ -61,22 +60,22 @@ def run_simulation_over_days():
     pyroute_path = "/home/thomas/Documents/pyroute/"
     wind_fname = pyroute_path + "analysis/poly_data/data_dir/wind_forecast.nc"
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"
-    diagram_path = pyroute_path + "analysis/poly_data"
+    dia_path = pyroute_path + "analysis/poly_data"
     sd = datetime(2000, 7, 1, 0, 0)
-    ed = datetime(2000, 7, 2, 0, 0)
+    ed = datetime(2000, 7, 10, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
         tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
-        jt, et, pf_vals = min_time_calculate(r, t, craft,
-                           x, y, land,
-                           tws, twd, wd, wh, wp)
+        jt, et, pf_vals, x_r, y_r = min_time_calculate(r, t, craft,
+                                                       x, y, land,
+                                                       tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
-        plot_mt_route(t, r, x, y, et, jt, diagram_path+"/"+str(t))
-        plot_reliability_route(t, r, x, y, pf_vals, jt, diagram_path+"/"+str(t))
+        plot_mt_route(t, r, x, y, x_r, y_r, et, jt, dia_path+"/"+str(t))
+        plot_reliability_route(t, r, x, y, pf_vals, jt, dia_path+"/"+str(t))
 
 
 def grid_error():

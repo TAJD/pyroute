@@ -29,13 +29,37 @@ def shortest_path(indx, pindx, sp):
         return shortest_path(indx, pindx, sp)
 
 
+def gen_fake_grid():
+    x = np.linspace(0, 10, 3)
+    y = np.linspace(0, 10, 3)
+    X, Y = np.meshgrid(x, y)
+    return X, Y
+
+
+def get_locs(indx, sp, x_locs, y_locs):
+    """Get the locations of the points on the shortest path."""
+    X = []
+    Y = []
+    for k in sp[:-1]:
+        i, j = np.where(indx == k)
+        X.append(x_locs[i, j])
+        Y.append(y_locs[i, j])
+    return X, Y
+
+
 if __name__ == '__main__':
     sd = gen_sample_data()
     indxs, pindxs = gen_indx(sd)
-    # print("Inputs to shortest path routine")
+    # `print`("Inputs to shortest path routine")
     # print(sd)
     # print(indxs)
     # print(pindxs)
     spr = shortest_path(indxs, sd, [5])
-    print("Outputs")
+    # print("Outputs")
+    # print(spr)
+    X, Y = gen_fake_grid()
+    x_l, y_l = get_locs(indxs, spr, X, Y)
+    print(indxs)
     print(spr)
+    print(x_l)
+    print(y_l)
