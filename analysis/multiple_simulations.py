@@ -20,6 +20,7 @@ from sail_route.route.grid_locations import return_co_ords
 
 home_path = "/home/td7g11/pyroute/"
 
+
 def run_simulation():
     start = Location(-14.0, 47.0)
     finish = Location(-6.0, 47.0)

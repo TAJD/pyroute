@@ -13,14 +13,12 @@ Return a true/false matrix which determines whether the point
 lies on land or not.
 
 """
-
-import os
 import numpy as np
-from numba import njit, jit
+from numba import jit, njit
 from mpl_toolkits.basemap import Basemap
 import pyproj
-from numba import jit
 from shapely.geometry import Point
+
 
 @jit
 def line_points(x, y, n_nodes, dist):
@@ -60,6 +58,18 @@ def check_land(grid):
         g_land = [bm.is_land(p[0], p[1]) for p in g]
         points.append(g_land)
     return points
+
+
+@njit(fastmath=True)
+def gen_indx(x_locs):
+    """Return the indexes for each node to be iterated over.
+
+    Uses the x_locs array as an array to mimic."""
+    n_elem = x_locs.shape[0] * x_locs.shape[1]
+    indx = np.arange(n_elem).reshape(x_locs.shape[0], x_locs.shape[1])
+    pindx = np.zeros_like(indx)
+    pindx[:] = -1
+    return indx, pindx
 
 
 @jit

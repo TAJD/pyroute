@@ -42,19 +42,27 @@ def craft_failure_model(time, tws, twa):
     return np.min((np.max((pf_time, pf_wind)), 1.0))
 
 
+@njit(fastmath=True)
+def dir_to_relative(x, y):
+    """Calculate relative angle to bearing."""
+    return np.absolute((x - y + 180) % 360 - 180)
+
+
 @jit(cache=True)
 def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
                   craft, lifetime=None):
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
-    twa = bearing - twd
-    twa = (twa + 180) % 360 - 180
+    twa = dir_to_relative(bearing, twd)
     speed = craft.return_perf(np.abs(twa), tws)
+    wave_dir = dir_to_relative(bearing, i_wd)
+    if wave_dir < 90.0:
+        speed = 0.0
     if lifetime is not None:
         pf = craft_failure_model(lifetime, tws, twa)
     else:
         pf = 0.0
     if speed == 0.0:
-        return datetime.timedelta(hours=150), pf
+        return datetime.timedelta(hours=100), pf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed)), pf

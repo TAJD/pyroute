@@ -6,7 +6,7 @@ thomas.dickson@soton.ac.uk
 """
 
 from ecmwfapi import ECMWFDataServer
-from sail_route.weather.weather_assistance import plot_wind_data
+from sail_route.weather.weather_assistance import plot_wind_data, generate_gif
 
 
 def download_wind(path, N, W, S, E):
@@ -56,10 +56,12 @@ def download_wind_poly():
 
 
 if __name__ == '__main__':
-    N = -10
-    S = -18.0
-    W = -150.0
-    E = -135.0
+    # N = -10
+    # S = -18.0
+    # W = -150.0
+    # E = -135.0
     path = "/home/thomas/Documents/pyroute/analysis/poly_data"
-    download_wind(path, N, W, S, E)
-    download_wave(path, N, W, S, E)
+    # download_wind(path, N, W, S, E)
+    # download_wave(path, N, W, S, E)
+    plot_wind_data(path+"/data_dir/", "wind_forecast.nc")
+    generate_gif(path+"/data_dir", "2000 July")

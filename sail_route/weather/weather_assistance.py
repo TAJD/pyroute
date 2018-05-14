@@ -6,13 +6,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import iris.coord_categorisation
 import cartopy.crs as ccrs
+import cartopy.feature as feature
 from numba import jit
 
 
 def plot_wind_data(folder, fname):
     """Use iris to manipulate data."""
-    vwind = iris.load_cube(fname, '10 metre V wind component')
-    uwind = iris.load_cube(fname, '10 metre U wind component')
+    vwind = iris.load_cube(folder+fname, '10 metre V wind component')
+    uwind = iris.load_cube(folder+fname, '10 metre U wind component')
 
     windspeed = 1.943844 * (uwind ** 2 + vwind ** 2) ** 0.5
     windspeed.rename('windspeed')
@@ -32,7 +33,7 @@ def plot_wind_data(folder, fname):
                                                    'longitude'])):
         plt.figure()
         ax = plt.axes(projection=ccrs.PlateCarree())
-        ax.coastlines()
+        ax.add_feature(feature.COASTLINE, linewidth=4)
         cf0 = plt.contourf(X, Y, windspeed[i].data, np.arange(0.0, 25.0, 3.0))
         cb = plt.colorbar(cf0)
         cb.set_label('Wind speed (knots)')
@@ -91,3 +92,11 @@ def setup_interpolator(cube):
                                                         'latitude',
                                                         'time'])
     return interp
+
+
+@jit
+def return_domain(wind_fname, waves_fname):
+    """Return the node locations and weather conditions."""
+    tws, twd = prepare_wind_data(wind_fname)
+    wd, wh, wp = prepare_wave_data(waves_fname)
+    return tws, twd, wd, wh, wp
