@@ -43,7 +43,7 @@ plt.rcParams['lines.linewidth'] = 2.0
 plt.rcParams['lines.markersize'] = 8
 plt.rcParams['legend.fontsize'] = 12
 plt.rcParams['text.usetex'] = True
-# plt.rcParams['font.family'] = "serif"
+plt.rcParams['font.family'] = "serif"
 plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
                                          \\usepackage{type1cm}"""
@@ -73,11 +73,11 @@ class Route:
 
 @timefunc
 def min_time_calculate(route, time, craft, x, y,
-                       land, tws, twd, wd, wh, wp):
+                       land, tws, twd, wd, wh, wp, verb=True):
     """Calculate the earliest arrival time across co-ordinates."""
-    pf_vals = np.zeros_like(x)  # array to hold failure probability
-    earl_time = np.full_like(x, np.inf)  # array to hold earliest times
-    indxs, pindxs = gen_indx(x)  # array to hold indexes of each location
+    pf_vals = np.zeros_like(x)
+    earl_time = np.full_like(x, np.inf)
+    indxs, pindxs = gen_indx(x)
     tws_interp = setup_interpolator(tws)
     twd_interp = setup_interpolator(twd)
     wd_interp = setup_interpolator(wd)
@@ -141,13 +141,7 @@ def min_time_calculate(route, time, craft, x, y,
                             print(stop_r)
                             print("Routing failed. Go sailing another day.")
                             break
-
-    # print(x)
-    # print(y)
-    # print(earl_time)
-    # print(indxs)
-    # print(pindxs)
-    stop_r
+    stop_r = 0
     for i in range(route.n_width):
         time = datetime.fromtimestamp(earl_time[-1, i])
         i_tws = tws_interp([x[-1, i],
@@ -176,7 +170,14 @@ def min_time_calculate(route, time, craft, x, y,
                 break
     sp = shortest_path(indxs, pindxs, [end_node])
     x_route, y_route = get_locs(indxs, sp, x, y)
-    return journey_time, earl_time, pf_vals, x_route, y_route
+    x_route = np.hstack(([route.finish.long], x_route,
+                        [route.start.long]))
+    y_route = np.hstack(([route.finish.lat], y_route,
+                        [route.start.lat]))
+    if verb is True:
+        return journey_time, earl_time, pf_vals, x_route, y_route
+    else:
+        return journey_time, x_route, y_route
 
 
 def min_vals(x, y, et):

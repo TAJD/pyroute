@@ -11,7 +11,7 @@ import numpy as np
 from numba import jit
 
 
-@jit
+@jit(cache=True)
 def shortest_path(indx, pindx, sp):
     """Create a list of the nodes visited on the shortest path."""
     ix = np.argwhere(indx == sp[-1])
@@ -32,4 +32,4 @@ def get_locs(indx, sp, x_locs, y_locs):
         i, j = np.where(indx == k)
         X.append(x_locs[i, j].view())
         Y.append(y_locs[i, j].view())
-    return X, Y
+    return np.array(X).flatten(), np.array(Y).flatten()

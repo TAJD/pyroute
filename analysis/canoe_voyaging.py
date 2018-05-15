@@ -6,63 +6,31 @@ thomas.dickson@soton.ac.uk
 """
 from context import sail_route
 import numpy as np
-from datetime import datetime, timedelta
-from sail_route.weather.weather_assistance import plot_wind_data, \
-                                                  generate_gif, \
-                                                  return_domain
+from datetime import datetime
+from canoe_voyaging_util import datetime_range, load_tongiaki_perf
+from sail_route.weather.weather_assistance import return_domain
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route, \
                                    plot_reliability_route
-from sail_route.performance.craft_performance import polar
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
-from sail_route.route.solve_route import shortest_path
 from grid_error import calc_h
 
 
-def datetime_range(start, end, delta):
-    """Generate range of dates."""
-    current = start
-    if not isinstance(delta, timedelta):
-        delta = timedelta(**delta)
-    while current < end:
-        yield current
-        current += delta
-
-
-def plot_wind():
-    """Plot representative wind scenario."""
-    path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/"
-    plot_wind_data(path, path+"/wind_forecast.nc")
-    generate_gif(path, "Polynesian_July")
-
-
-def load_tongiaki_perf():
-    """Load predicted Tongiaki voyaging canoe performance."""
-    pyroute_path = "/home/thomas/Documents/pyroute/"
-    path = pyroute_path + "analysis/poly_data"
-    perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv", delimiter=",")
-    tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
-    twa = np.array([0, 60, 70, 80, 90, 100, 110, 120])
-    return polar(twa, tws, perf, 0.0)
-
-
 def run_simulation_over_days():
-    "Begin routing simulations"
-    "Start: Tahiti"
-    "Finish: Marquesas"
-    "Tongiaki vpp performance"
+    """Run routing simulations between tahiti and marquesas."""
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    n_nodes = 20
+    n_nodes = 30
     n_width = n_nodes*4
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
-    node_distance = 750*dist/n_width
-    print("Node distance is ", node_distance, " m")
+    node_distance = 550*dist/n_width
+    print("Node height distance is ", dist*1000, " m")
+    print("Node width distance is ", node_distance, " m")
     r = Route(tahiti, marquesas, n_nodes, n_width,
               node_distance, craft)
     pyroute_path = "/home/thomas/Documents/pyroute/"
@@ -70,7 +38,7 @@ def run_simulation_over_days():
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data"
     sd = datetime(2000, 7, 1, 0, 0)
-    ed = datetime(2000, 7, 2, 0, 0)
+    ed = datetime(2000, 7, 10, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,

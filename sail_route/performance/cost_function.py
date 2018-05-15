@@ -63,10 +63,9 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     #     pf = craft_failure_model(lifetime, tws, twa)
     # else:
     pf = 0.0
-    if (speed < 0.2) | (twa < 30):
+    if (speed < 0.2) | (twa < 30) | (pf > craft.accept_pf):
         # print(twa, " ", tws, " ", speed)
         stop_r += 1
-        # return datetime.timedelta(hours=np.float64(dist/0.01)), pf
         return np.inf, pf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed)), pf
