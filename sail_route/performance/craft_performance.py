@@ -29,15 +29,8 @@ class polar(object):
     def return_perf(self, tws, twa):
         """Return sailing craft performance."""
         p = interp2d(self.twa_range, self.tws_range, self.perf,
-                     kind='cubic')  # bounds_error=True, fill_value=0.0)
+                     kind='linear')
         return p(twa, tws)
-
-    # @jit(cache=True)
-    # def return_perf(self, tws, twa):
-    #     """Return sailing craft performance."""
-    #     p = RectBivariateSpline(self.tws_range, self.twa_range,
-    #                             self.perf, bbox=[0, 180, 0, 40])
-    #     return p.ev(twa, tws)
 
 
 def return_boat_perf():

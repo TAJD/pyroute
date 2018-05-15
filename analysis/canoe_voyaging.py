@@ -61,9 +61,10 @@ def run_simulation_over_days():
     print("Nodes in width: ", n_width)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
-    node_distance = dist/n_width
+    node_distance = 750*dist/n_width
+    print("Node distance is ", node_distance, " m")
     r = Route(tahiti, marquesas, n_nodes, n_width,
-              node_distance*500, craft)
+              node_distance, craft)
     pyroute_path = "/home/thomas/Documents/pyroute/"
     wind_fname = pyroute_path + "analysis/poly_data/data_dir/wind_forecast.nc"
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"

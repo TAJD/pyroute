@@ -51,7 +51,7 @@ def dir_to_relative(x, y):
 
 @jit(cache=True, nogil=True)
 def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
-                  craft, lifetime=None):
+                  craft, stop_r, lifetime=None):
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
     twa = dir_to_relative(bearing, twd)
@@ -63,7 +63,10 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     #     pf = craft_failure_model(lifetime, tws, twa)
     # else:
     pf = 0.0
-    if speed < 0.1:
-        return datetime.timedelta(hours=np.float64(dist/0.01)), pf
+    if (speed < 0.2) | (twa < 30):
+        # print(twa, " ", tws, " ", speed)
+        stop_r += 1
+        # return datetime.timedelta(hours=np.float64(dist/0.01)), pf
+        return np.inf, pf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed)), pf
