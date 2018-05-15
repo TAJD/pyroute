@@ -72,14 +72,15 @@ def gen_indx(x_locs):
     return indx, pindx
 
 
-@jit
+@jit(cache=True)
 def return_co_ords(start_long, finish_long, start_lat, finish_lat,
                    n_ranks=10, n_nodes=10, dist=5000):
     """Return grid co-ordinates between start and finish."""
     grid = gen_grid(start_long, finish_long, start_lat, finish_lat,
                     n_ranks, n_nodes, dist)
     land = check_land(grid)
-    g = np.reshape(np.hstack(grid), (1, -1))
+    land = np.reshape(land, (n_ranks, n_nodes))
+    g = np.reshape(grid, (1, -1))
     x = np.reshape(g[0][::2], (n_ranks, n_nodes))
     y = np.reshape(g[0][1::2], (n_ranks, n_nodes))
     return x, y, np.array(land)

@@ -5,7 +5,7 @@ thomas.dickson@soton.ac.uk
 24/04/2018
 """
 import numpy as np
-from scipy.interpolate import interp2d
+from scipy.interpolate import interp2d, RectBivariateSpline
 from numba import jit, jitclass, float64
 
 
@@ -14,16 +14,7 @@ def get_perf():
     perf = np.genfromtxt(path, delimiter=";", skip_header=1)
     return perf[:, 1:]
 
-# spec = [
-#     ('tws_range', float64[:]),
-#     ('twa_range', float64[:]),
-#     ('perf', float64[:]),
-#     ('unc', float64),
-#     ('tws', float64),
-#     ('twa', float64),
-# ]
-#
-# @jitclass(spec)
+
 class polar(object):
     """Store and return information on sailing craft polars."""
 
@@ -38,8 +29,15 @@ class polar(object):
     def return_perf(self, tws, twa):
         """Return sailing craft performance."""
         p = interp2d(self.twa_range, self.tws_range, self.perf,
-                     kind='linear', bounds_error=False, fill_value=0.0)
+                     kind='cubic')  # bounds_error=True, fill_value=0.0)
         return p(twa, tws)
+
+    # @jit(cache=True)
+    # def return_perf(self, tws, twa):
+    #     """Return sailing craft performance."""
+    #     p = RectBivariateSpline(self.tws_range, self.twa_range,
+    #                             self.perf, bbox=[0, 180, 0, 40])
+    #     return p.ev(twa, tws)
 
 
 def return_boat_perf():

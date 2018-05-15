@@ -22,6 +22,7 @@ from sail_route.weather.weather_assistance import return_domain, \
                                        setup_interpolator
 warnings.filterwarnings("ignore")
 
+
 def recompile_nb_code():
     this_module = sys.modules[__name__]
     module_members = inspect.getmembers(this_module)
@@ -84,25 +85,24 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
     journey_time = 10**10
 
     for i in range(route.n_width):
-        if land[i, 0] is True:
-            earl_time[i, 0] == np.inf
-        i_tws = tws_interp([x[i, 0], y[i, 0], time]).data
-        i_twd = twd_interp([x[i, 0], y[i, 0], time]).data
-        i_wd = wd_interp([x[i, 0], y[i, 0], time]).data
-        i_wh = wh_interp([x[i, 0], y[i, 0], time]).data
-        i_wp = wp_interp([x[i, 0], y[i, 0], time]).data
+        i_tws = tws_interp([x[0, i], y[0, i], time]).data
+        i_twd = twd_interp([x[0, i], y[0, i], time]).data
+        i_wd = wd_interp([x[0, i], y[0, i], time]).data
+        i_wh = wh_interp([x[0, i], y[0, i], time]).data
+        i_wp = wp_interp([x[0, i], y[0, i], time]).data
         travel_time, pf = cost_function(route.start.long,
                                         route.start.lat,
-                                        x[i, 0], y[i, 0],
+                                        x[0, i], y[0, i],
                                         i_tws, i_twd,
                                         i_wd, i_wh, i_wp,
                                         craft)
         total_time = time + travel_time
-        pf_vals[i, :] = pf
-        earl_time[i, 0] = total_time.timestamp()
-
-    for j in range(route.n_ranks-1):
-        for i in range(route.n_width):
+        pf_vals[0, i] = pf
+        earl_time[0, i] = total_time.timestamp()
+        if land[0, i] is True:
+            earl_time[0, i] == np.inf
+    for i in range(route.n_ranks-1):
+        for j in range(route.n_width):
             utime = datetime.fromtimestamp(earl_time[i, j])
             i_wd = wd_interp([x[i, j], y[i, j], time]).data
             i_wh = wh_interp([x[i, j], y[i, j], time]).data
@@ -111,42 +111,46 @@ def min_time_calculate(route, time, craft, x, y, land, tws, twd, wd, wh, wp):
             i_twd = twd_interp([x[i, j], y[i, j], time]).data
             lifetime = utime - time
             for k in range(route.n_width):
-                    if land[k, j+1] is True:
-                        earl_time[k, j+1] == np.inf
+                    if land[i+1, k] is True:
+                        earl_time[i+1, k] == np.inf
                     else:
                         travel_time, pf = cost_function(x[i, j],
                                                         y[i, j],
-                                                        x[k, j+1],
-                                                        y[k, j+1],
+                                                        x[i+1, k],
+                                                        y[i+1, k],
                                                         i_tws, i_twd,
                                                         i_wd, i_wh, i_wp,
                                                         craft,
                                                         lifetime)
                     jt = utime + travel_time
-                    if jt.timestamp() < earl_time[k, j+1]:
-                        earl_time[k, j+1] = jt.timestamp()
-                        pf_vals[k, j+1] = pf
-                        pindxs[k, j+1] = indxs[i, j]
-
+                    if jt.timestamp() < earl_time[i+1, k]:
+                        earl_time[i+1, k] = jt.timestamp()
+                        pf_vals[i+1, k] = pf
+                        pindxs[i+1, k] = indxs[i, j]
+    # print(x)
+    # print(y)
+    # print(earl_time)
+    # print(indxs)
+    # print(pindxs)
     for i in range(route.n_width):
-        time = datetime.fromtimestamp(earl_time[i, -1])
-        i_tws = tws_interp([x[i, -1],
-                           y[i, -1], time]).data
-        i_twd = twd_interp([x[i, -1],
-                           y[i, -1], time]).data
-        travel_time, pf = cost_function(x[i, -1],
-                                        y[i, -1],
+        time = datetime.fromtimestamp(earl_time[-1, i])
+        i_tws = tws_interp([x[-1, i],
+                           y[-1, i], time]).data
+        i_twd = twd_interp([x[-1, i],
+                           y[-1, i], time]).data
+        travel_time, pf = cost_function(x[-1, i],
+                                        y[-1, i],
                                         route.finish.long,
                                         route.finish.lat,
                                         i_tws, i_twd,
                                         i_wd, i_wh, i_wp,
                                         craft,
                                         lifetime)
-        et = datetime.fromtimestamp(earl_time[i, -1]) + travel_time
+        et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
         if datetime.fromtimestamp(journey_time) > et:
             journey_time = et.timestamp()
-            pf_vals[i, -1] = pf
-            end_node = indxs[i, -1]
+            pf_vals[-1, i] = pf
+            end_node = indxs[-1, i]
     sp = shortest_path(indxs, pindxs, [end_node])
     x_route, y_route = get_locs(indxs, sp, x, y)
     return journey_time, earl_time, pf_vals, x_route, y_route
