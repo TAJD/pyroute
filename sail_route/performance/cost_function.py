@@ -53,7 +53,7 @@ def dir_to_relative(x, y):
 def failure_criteria(craft, time, speed, tws, twa, wd, wh, wp):
     """Craft failure model. Returns an array of booleans."""
     pf = 0.0
-    if (wd < 30.0) | (wh > 1.0):
+    if (wd < 30.0) | (wh > 5.0):
         return True, pf
     if (speed < 0.2) | (twa < 30) | (pf > craft.apf):
         return True, pf

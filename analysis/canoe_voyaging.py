@@ -22,14 +22,14 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    n_nodes = 5
+    n_nodes = 10
     n_width = n_nodes*4
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
-    node_distance = 550*dist/n_width
-    print("Node height distance is ", dist*1000, " m")
+    node_distance = 1000*dist/n_width
+    print("Node height distance is ", dist/n_nodes*1000, " m")
     print("Node width distance is ", node_distance, " m")
     r = Route(tahiti, marquesas, n_nodes, n_width,
               node_distance, craft)
@@ -37,8 +37,8 @@ def run_simulation_over_days():
     wind_fname = pyroute_path + "analysis/poly_data/data_dir/wind_forecast.nc"
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data"
-    sd = datetime(2000, 7, 1, 0, 0)
-    ed = datetime(2000, 7, 2, 0, 0)
+    sd = datetime(2000, 7, 2, 0, 0)
+    ed = datetime(2000, 7, 3, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,

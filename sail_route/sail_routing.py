@@ -38,7 +38,7 @@ warnings.filterwarnings("ignore")
 # recompile_nb_code()
 
 
-plt.rcParams['savefig.dpi'] = 300
+plt.rcParams['savefig.dpi'] = 400
 plt.rcParams['figure.autolayout'] = False
 plt.rcParams['figure.figsize'] = 10, 6
 plt.rcParams['axes.labelsize'] = 14
@@ -139,6 +139,8 @@ def min_time_calculate(route, time, craft, x, y,
                                 earl_time[i+1, k] = jt.timestamp()
                                 pf_vals[i+1, k] = pf
                                 pindxs[i+1, k] = indxs[i, j]
+            if np.isfinite(earl_time[i+1, :]) is not True:
+                pass
     for i in range(route.n_width):
         if earl_time[-1, i] == np.inf:
             pass
@@ -164,19 +166,19 @@ def min_time_calculate(route, time, craft, x, y,
                     journey_time = et.timestamp()
                     pf_vals[-1, i] = pf
                     end_node = indxs[-1, i]
-    if np.isfinite(earl_time[-1, :]) is not True:
-        return time.timestamp(), earl_time, pf_vals, route.start.long, route.start.lat
+    # if np.isfinite(earl_time[-1, :].all()) is not True:
+    #     return time.timestamp(), earl_time, pf_vals, route.start.long, route.start.lat
+    # else:
+    sp = shortest_path(indxs, pindxs, [end_node])
+    x_route, y_route = get_locs(indxs, sp, x, y)
+    x_route = np.hstack(([route.finish.long], x_route,
+                        [route.start.long]))
+    y_route = np.hstack(([route.finish.lat], y_route,
+                        [route.start.lat]))
+    if verb is True:
+        return journey_time, earl_time, pf_vals, x_route, y_route
     else:
-        sp = shortest_path(indxs, pindxs, [end_node])
-        x_route, y_route = get_locs(indxs, sp, x, y)
-        x_route = np.hstack(([route.finish.long], x_route,
-                            [route.start.long]))
-        y_route = np.hstack(([route.finish.lat], y_route,
-                            [route.start.lat]))
-        if verb is True:
-            return journey_time, earl_time, pf_vals, x_route, y_route
-        else:
-            return journey_time, x_route, y_route
+        return journey_time, x_route, y_route
 
 
 def min_vals(x, y, et):
@@ -229,9 +231,13 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
+    parallels = np.arange(-90.0, 90.0, 5.)
+    map.drawparallels(parallels, labels=[1, 0, 0, 0])
+    meridians = np.arange(180., 360., 5.)
+    map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x_r, y_r = map(x_r, y_r)
-    map.plot(x_r, y_r, color='green')
+    map.plot(x_r, y_r, color='green', label='Shortest path')
     if et[et < np.inf].size == 0:
         pass
     else:
@@ -242,8 +248,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
                                    et[et < np.inf].max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
-    plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left",
-               borderaxespad=0)
+    plt.legend(loc='best', fancybox=True, framealpha=0.5)
     plt.tight_layout()
     plt.title("Minimum journey time: " + str(vt))
     plt.savefig(fname+"min_time"+".png")
