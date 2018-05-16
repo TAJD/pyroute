@@ -7,7 +7,7 @@ thomas.dickson@soton.ac.uk
 from context import sail_route
 import numpy as np
 from datetime import datetime
-from canoe_voyaging_util import datetime_range, load_tongiaki_perf
+from canoe_voyaging_utils import datetime_range, load_tongiaki_perf
 from sail_route.weather.weather_assistance import return_domain
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route, \
@@ -22,7 +22,7 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
-    n_nodes = 30
+    n_nodes = 5
     n_width = n_nodes*4
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -38,7 +38,7 @@ def run_simulation_over_days():
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data"
     sd = datetime(2000, 7, 1, 0, 0)
-    ed = datetime(2000, 7, 10, 0, 0)
+    ed = datetime(2000, 7, 2, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,
@@ -51,7 +51,7 @@ def run_simulation_over_days():
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
         plot_mt_route(t, r, x, y, x_r, y_r, et, jt, dia_path+"/"+str(t))
-        plot_reliability_route(t, r, x, y, pf_vals, jt, dia_path+"/"+str(t))
+        # plot_reliability_route(t, r, x, y, pf_vals, jt, dia_path+"/"+str(t))
 
 
 def grid_error():

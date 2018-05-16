@@ -11,6 +11,10 @@ import datetime
 from datetime import datetime
 from datetime import timedelta
 import warnings
+# import numba
+#
+# cache = numba.caching.NullCache()
+# cache.flush()
 
 from mpl_toolkits.basemap import Basemap
 import matplotlib.pyplot as plt
@@ -23,14 +27,15 @@ from sail_route.weather.weather_assistance import return_domain, \
 warnings.filterwarnings("ignore")
 
 
-def recompile_nb_code():
-    this_module = sys.modules[__name__]
-    module_members = inspect.getmembers(this_module)
-
-    for member_name, member in module_members:
-        if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
-            member.recompile()
-recompile_nb_code()
+# def recompile_nb_code():
+#     this_module = sys.modules[__name__]
+#     module_members = inspect.getmembers(this_module)
+#
+#     for member_name, member in module_members:
+#         if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
+#             member.recompile()
+#
+# recompile_nb_code()
 
 
 plt.rcParams['savefig.dpi'] = 300
@@ -84,7 +89,6 @@ def min_time_calculate(route, time, craft, x, y,
     wh_interp = setup_interpolator(wh)
     wp_interp = setup_interpolator(wp)
     journey_time = 10**10
-    stop_r = 0
     for i in range(route.n_width):
         i_tws = tws_interp([x[0, i], y[0, i], time]).data
         i_twd = twd_interp([x[0, i], y[0, i], time]).data
@@ -96,7 +100,7 @@ def min_time_calculate(route, time, craft, x, y,
                                         x[0, i], y[0, i],
                                         i_tws, i_twd,
                                         i_wd, i_wh, i_wp,
-                                        craft, stop_r)
+                                        craft)
         if (travel_time == np.inf) | (land[0, i] is True):
             pass
         else:
@@ -116,7 +120,6 @@ def min_time_calculate(route, time, craft, x, y,
                 i_twd = twd_interp([x[i, j], y[i, j], time]).data
                 lifetime = utime - time
                 for k in range(route.n_width):
-                        stop_r = 0
                         if land[i+1, k] is True:
                             earl_time[i+1, k] == np.inf
                         else:
@@ -127,7 +130,6 @@ def min_time_calculate(route, time, craft, x, y,
                                                             i_tws, i_twd,
                                                             i_wd, i_wh, i_wp,
                                                             craft,
-                                                            stop_r,
                                                             lifetime)
                         if travel_time == np.inf:
                             pass
@@ -137,47 +139,44 @@ def min_time_calculate(route, time, craft, x, y,
                                 earl_time[i+1, k] = jt.timestamp()
                                 pf_vals[i+1, k] = pf
                                 pindxs[i+1, k] = indxs[i, j]
-                        if stop_r == route.n_width:
-                            print(stop_r)
-                            print("Routing failed. Go sailing another day.")
-                            break
-    stop_r = 0
     for i in range(route.n_width):
-        time = datetime.fromtimestamp(earl_time[-1, i])
-        i_tws = tws_interp([x[-1, i],
-                           y[-1, i], time]).data
-        i_twd = twd_interp([x[-1, i],
-                           y[-1, i], time]).data
-        travel_time, pf = cost_function(x[-1, i],
-                                        y[-1, i],
-                                        route.finish.long,
-                                        route.finish.lat,
-                                        i_tws, i_twd,
-                                        i_wd, i_wh, i_wp,
-                                        craft,
-                                        stop_r,
-                                        lifetime)
-        if travel_time == np.inf:
+        if earl_time[-1, i] == np.inf:
             pass
         else:
-            et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
-            if datetime.fromtimestamp(journey_time) > et:
-                journey_time = et.timestamp()
-                pf_vals[-1, i] = pf
-                end_node = indxs[-1, i]
-            if stop_r == route.n_width:
-                print("Routing failed. Go sailing another day.")
-                break
-    sp = shortest_path(indxs, pindxs, [end_node])
-    x_route, y_route = get_locs(indxs, sp, x, y)
-    x_route = np.hstack(([route.finish.long], x_route,
-                        [route.start.long]))
-    y_route = np.hstack(([route.finish.lat], y_route,
-                        [route.start.lat]))
-    if verb is True:
-        return journey_time, earl_time, pf_vals, x_route, y_route
+            time = datetime.fromtimestamp(earl_time[-1, i])
+            i_tws = tws_interp([x[-1, i],
+                               y[-1, i], time]).data
+            i_twd = twd_interp([x[-1, i],
+                               y[-1, i], time]).data
+            travel_time, pf = cost_function(x[-1, i],
+                                            y[-1, i],
+                                            route.finish.long,
+                                            route.finish.lat,
+                                            i_tws, i_twd,
+                                            i_wd, i_wh, i_wp,
+                                            craft,
+                                            lifetime)
+            if travel_time == np.inf:
+                pass
+            else:
+                et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
+                if datetime.fromtimestamp(journey_time) > et:
+                    journey_time = et.timestamp()
+                    pf_vals[-1, i] = pf
+                    end_node = indxs[-1, i]
+    if np.isfinite(earl_time[-1, :]) is not True:
+        return time.timestamp(), earl_time, pf_vals, route.start.long, route.start.lat
     else:
-        return journey_time, x_route, y_route
+        sp = shortest_path(indxs, pindxs, [end_node])
+        x_route, y_route = get_locs(indxs, sp, x, y)
+        x_route = np.hstack(([route.finish.long], x_route,
+                            [route.start.long]))
+        y_route = np.hstack(([route.finish.lat], y_route,
+                            [route.start.lat]))
+        if verb is True:
+            return journey_time, earl_time, pf_vals, x_route, y_route
+        else:
+            return journey_time, x_route, y_route
 
 
 def min_vals(x, y, et):
@@ -213,7 +212,7 @@ def timestamp_to_delta_time(start, x):
 def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     """Plot minimum time output from routing simulations."""
     vt = datetime.fromtimestamp(jt) - start
-    ul = jt + vt.total_seconds()/6
+    # ul = jt + vt.total_seconds()/6
     add_param = 2
     res = 'i'
     plt.figure(figsize=(6, 10))
@@ -233,13 +232,16 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x_r, y_r = map(x_r, y_r)
     map.plot(x_r, y_r, color='green')
-    x, y = map(x, y)
-    ctf = map.contourf(x, y, et, cmap='gray')
-    cbar = plt.colorbar(ctf, orientation='horizontal')
-    y_tick_labs = [timestamp_to_delta_time(start, x) for x in
-                   np.linspace(et[et < np.inf].min(),
-                               et[et < np.inf].max(), 9)]
-    cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+    if et[et < np.inf].size == 0:
+        pass
+    else:
+        x, y = map(x, y)
+        ctf = map.contourf(x, y, et, cmap='gray')
+        y_tick_labs = [timestamp_to_delta_time(start, x) for x in
+                       np.linspace(et[et < np.inf].min(),
+                                   et[et < np.inf].max(), 9)]
+        cbar = plt.colorbar(ctf, orientation='horizontal')
+        cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
     plt.legend(bbox_to_anchor=(1.04, 0.5), loc="center left",
                borderaxespad=0)
     plt.tight_layout()

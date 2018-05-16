@@ -49,23 +49,30 @@ def dir_to_relative(x, y):
     return np.absolute((x - y + 180) % 360 - 180)
 
 
+@jit(fastmath=True, nogil=True, cache=True)
+def failure_criteria(craft, time, speed, tws, twa, wd, wh, wp):
+    """Craft failure model. Returns an array of booleans."""
+    pf = 0.0
+    if (wd < 30.0) | (wh > 1.0):
+        return True, pf
+    if (speed < 0.2) | (twa < 30) | (pf > craft.apf):
+        return True, pf
+    else:
+        return False, pf
+
+
 @jit(cache=True, nogil=True)
 def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
-                  craft, stop_r, lifetime=None):
+                  craft, lifetime=None):
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
     twa = dir_to_relative(bearing, twd)
+    wave_dir = dir_to_relative(bearing, i_wd)
     speed = craft.return_perf(np.abs(twa), tws)
-    # wave_dir = dir_to_relative(bearing, i_wd)
-    # if wave_dir < 30.0:
-    #     speed = 0.0
-    # if lifetime is not None:
-    #     pf = craft_failure_model(lifetime, tws, twa)
-    # else:
+    fc, pf = failure_criteria(craft, lifetime, speed, tws, twa,
+                              wave_dir, i_wh, i_wp)
     pf = 0.0
-    if (speed < 0.2) | (twa < 30) | (pf > craft.accept_pf):
-        # print(twa, " ", tws, " ", speed)
-        stop_r += 1
+    if fc is True:
         return np.inf, pf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed)), pf
