@@ -80,7 +80,6 @@ class Route:
 def min_time_calculate(route, time, craft, x, y,
                        land, tws, twd, wd, wh, wp, verb=True):
     """Calculate the earliest arrival time across co-ordinates."""
-    pf_vals = np.zeros_like(x)
     earl_time = np.full_like(x, np.inf)
     indxs, pindxs = gen_indx(x)
     tws_interp = setup_interpolator(tws)
@@ -88,6 +87,7 @@ def min_time_calculate(route, time, craft, x, y,
     wd_interp = setup_interpolator(wd)
     wh_interp = setup_interpolator(wh)
     wp_interp = setup_interpolator(wp)
+    end_node = 0
     journey_time = 10**10
     for i in range(route.n_width):
         i_tws = tws_interp([x[0, i], y[0, i], time]).data
@@ -105,7 +105,6 @@ def min_time_calculate(route, time, craft, x, y,
             pass
         else:
             total_time = time + travel_time
-            pf_vals[0, i] = pf
             earl_time[0, i] = total_time.timestamp()
     for i in range(route.n_ranks-1):
         for j in range(route.n_width):
@@ -137,7 +136,6 @@ def min_time_calculate(route, time, craft, x, y,
                             jt = utime + travel_time
                             if jt.timestamp() < earl_time[i+1, k]:
                                 earl_time[i+1, k] = jt.timestamp()
-                                pf_vals[i+1, k] = pf
                                 pindxs[i+1, k] = indxs[i, j]
             if np.isfinite(earl_time[i+1, :]) is not True:
                 pass
@@ -164,11 +162,7 @@ def min_time_calculate(route, time, craft, x, y,
                 et = datetime.fromtimestamp(earl_time[-1, i]) + travel_time
                 if datetime.fromtimestamp(journey_time) > et:
                     journey_time = et.timestamp()
-                    pf_vals[-1, i] = pf
                     end_node = indxs[-1, i]
-    # if np.isfinite(earl_time[-1, :].all()) is not True:
-    #     return time.timestamp(), earl_time, pf_vals, route.start.long, route.start.lat
-    # else:
     sp = shortest_path(indxs, pindxs, [end_node])
     x_route, y_route = get_locs(indxs, sp, x, y)
     x_route = np.hstack(([route.finish.long], x_route,
@@ -176,7 +170,7 @@ def min_time_calculate(route, time, craft, x, y,
     y_route = np.hstack(([route.finish.lat], y_route,
                         [route.start.lat]))
     if verb is True:
-        return journey_time, earl_time, pf_vals, x_route, y_route
+        return journey_time, earl_time, x_route, y_route
     else:
         return journey_time, x_route, y_route
 
@@ -237,7 +231,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x_r, y_r = map(x_r, y_r)
-    map.plot(x_r, y_r, color='green', label='Shortest path')
+    map.plot(x_r, y_r, color='green', label='Minimum time path')
     if et[et < np.inf].size == 0:
         pass
     else:
@@ -248,38 +242,10 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
                                    et[et < np.inf].max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+        map.scatter(x[et > 1e308], y[et > 1e308], color='red',
+                    s=1, label='No go')
     plt.legend(loc='best', fancybox=True, framealpha=0.5)
     plt.tight_layout()
     plt.title("Minimum journey time: " + str(vt))
     plt.savefig(fname+"min_time"+".png")
-    plt.clf()
-
-
-def plot_reliability_route(start, route, x, y, pf_vals, jt, fname):
-    """Plot reliability predictions from routing."""
-    plt.figure(figsize=(6, 10))
-    res = 'i'
-    add_param = 2
-    map = Basemap(projection='tmerc',
-                  ellps='WGS84',
-                  lat_0=(y.min() + y.max())/2,
-                  lon_0=(x.min() + x.max())/2,
-                  llcrnrlon=x.min()-add_param,
-                  llcrnrlat=y.min()-add_param,
-                  urcrnrlon=x.max()+add_param,
-                  urcrnrlat=y.max()+add_param,
-                  # lat_ts=(y.min() + y.max())/2,
-                  resolution=res)  # f = fine resolution
-    map.drawcoastlines()
-    x, y = map(x, y)
-    ctf = map.contourf(x, y, pf_vals, cmap='Reds', vmin=0, vmax=1)
-    r_s_x, r_s_y = map(route.start.long, route.start.lat)
-    map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
-    r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
-    map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
-    x_locs_pf, y_locs_pf, pf_min = min_vals(x, y, pf_vals)
-    cbar = plt.colorbar(ctf, orientation='horizontal',
-                        boundaries=np.linspace(0, 1, 10))
-    cbar.set_label(r'$p_f$')
-    plt.savefig(fname+"reliability"+".png")
     plt.clf()
