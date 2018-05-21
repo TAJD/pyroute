@@ -53,9 +53,10 @@ def plot_uncertain_routes(start, route, x, y, unc, x_r, y_r, results):
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     for n, i in enumerate(unc):
         route_x, route_y = map(x_r[n], y_r[n])
-        map.plot(route_x, route_y, label="""Uncertainty = {:.2f},
+        map.plot(route_x, route_y, label="""Perf = {:.2f}\%,
                     Time = {:.2f} hours""".format(i, results[n]))
-    plt.legend(loc=3, fancybox=True, framealpha=0.5)
+    plt.legend(bbox_to_anchor=(1.1, 1.05), fancybox=True,
+               framealpha=0.5)
     plt.tight_layout()
     return plt
 
@@ -95,7 +96,7 @@ def run_uncertain_performance_simulation():
     start = Location(-149.426, -17.651)
     finish = Location(-157.92, 21.83)
     start_date = datetime(1976, 5, 1, 0, 0)
-    n_nodes = 30
+    n_nodes = 60
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -129,13 +130,13 @@ def run_uncertain_performance_simulation():
                                               tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - start_date
         results[n] = vt.total_seconds()/(60.0*60.0)
-        print(results[n])
+        print(results[n]/24)
         route_x.append(x_r)
         route_y.append(y_r)
     plot_uncertainty(unc, results)
-    plt.savefig(dia_path+"/unc_voyaging_times.png")
+    plt.savefig(dia_path+"/unc_vt.png")
     plot_uncertain_routes(start, r, x, y, unc, route_x, route_y, results)
-    plt.savefig(dia_path+"/unc_voyaging_routes.png")
+    plt.savefig(dia_path+"/unc_vt_routes.png")
     # plot_uncertain_routes_hex(start, r, x, y, unc, x_r, y_r, results)
     # plt.show()
 

@@ -52,16 +52,16 @@ def dir_to_relative(x, y):
 @jit(fastmath=True, nogil=True, cache=True)
 def failure_criteria(craft, time, speed, tws, twa, wd, wh, wp):
     """Craft failure model. Returns an array of booleans."""
-    if (wd < 30.0):
-        return True
-    elif (wh > 5.0):
-        return True
+    # if (wd < 30.0):
+    #     return True
+    # elif (wh > 5.0):
+    #     return True
     # elif (speed < 0.3):
     #     return True
-    elif (twa < 30):
-        return True
-    else:
-        return False
+    # if (twa < 30):
+    #     return True
+    # else:
+    return False
 
 
 @jit(cache=True, nogil=True)
@@ -72,9 +72,12 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     twa = dir_to_relative(bearing, twd)
     wave_dir = dir_to_relative(bearing, i_wd)
     speed = craft.return_perf(np.abs(twa), tws)
-    fc = failure_criteria(craft, lifetime, speed, tws, twa,
-                          wave_dir, i_wh, i_wp)
-    if fc is True:
+    # fc = failure_criteria(craft, lifetime, speed, tws, twa,
+    #                       wave_dir, i_wh, i_wp)
+    # if fc is True:
+    #     return np.inf
+    # else:
+    if speed < 0.3:
         return np.inf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed))

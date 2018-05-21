@@ -130,7 +130,7 @@ def min_time_calculate(route, time, craft, x, y,
                                                         i_wd, i_wh, i_wp,
                                                         craft,
                                                         lifetime)
-                        if travel_time == np.inf:
+                        if (travel_time == np.inf):
                             pass
                         else:
                             jt = utime + travel_time
