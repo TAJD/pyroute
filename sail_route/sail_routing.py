@@ -95,12 +95,12 @@ def min_time_calculate(route, time, craft, x, y,
         i_wd = wd_interp([x[0, i], y[0, i], time]).data
         i_wh = wh_interp([x[0, i], y[0, i], time]).data
         i_wp = wp_interp([x[0, i], y[0, i], time]).data
-        travel_time, pf = cost_function(route.start.long,
-                                        route.start.lat,
-                                        x[0, i], y[0, i],
-                                        i_tws, i_twd,
-                                        i_wd, i_wh, i_wp,
-                                        craft)
+        travel_time = cost_function(route.start.long,
+                                    route.start.lat,
+                                    x[0, i], y[0, i],
+                                    i_tws, i_twd,
+                                    i_wd, i_wh, i_wp,
+                                    craft)
         if (travel_time == np.inf) | (land[0, i] is True):
             pass
         else:
@@ -122,14 +122,14 @@ def min_time_calculate(route, time, craft, x, y,
                         if land[i+1, k] is True:
                             earl_time[i+1, k] == np.inf
                         else:
-                            travel_time, pf = cost_function(x[i, j],
-                                                            y[i, j],
-                                                            x[i+1, k],
-                                                            y[i+1, k],
-                                                            i_tws, i_twd,
-                                                            i_wd, i_wh, i_wp,
-                                                            craft,
-                                                            lifetime)
+                            travel_time = cost_function(x[i, j],
+                                                        y[i, j],
+                                                        x[i+1, k],
+                                                        y[i+1, k],
+                                                        i_tws, i_twd,
+                                                        i_wd, i_wh, i_wp,
+                                                        craft,
+                                                        lifetime)
                         if travel_time == np.inf:
                             pass
                         else:
@@ -148,14 +148,14 @@ def min_time_calculate(route, time, craft, x, y,
                                y[-1, i], time]).data
             i_twd = twd_interp([x[-1, i],
                                y[-1, i], time]).data
-            travel_time, pf = cost_function(x[-1, i],
-                                            y[-1, i],
-                                            route.finish.long,
-                                            route.finish.lat,
-                                            i_tws, i_twd,
-                                            i_wd, i_wh, i_wp,
-                                            craft,
-                                            lifetime)
+            travel_time = cost_function(x[-1, i],
+                                        y[-1, i],
+                                        route.finish.long,
+                                        route.finish.lat,
+                                        i_tws, i_twd,
+                                        i_wd, i_wh, i_wp,
+                                        craft,
+                                        lifetime)
             if travel_time == np.inf:
                 pass
             else:
@@ -232,18 +232,18 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     x_r, y_r = map(x_r, y_r)
     map.plot(x_r, y_r, color='green', label='Minimum time path')
-    if et[et < np.inf].size == 0:
-        pass
-    else:
+    try:
         x, y = map(x, y)
         ctf = map.contourf(x, y, et, cmap='gray')
         y_tick_labs = [timestamp_to_delta_time(start, x) for x in
-                       np.linspace(et[et < np.inf].min(),
-                                   et[et < np.inf].max(), 9)]
+                       np.linspace(et[et < 8640000].min(),
+                                   et[et < 8640000].max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
         map.scatter(x[et > 1e308], y[et > 1e308], color='red',
                     s=1, label='No go')
+    except ValueError:
+        pass
     plt.legend(loc='best', fancybox=True, framealpha=0.5)
     plt.tight_layout()
     plt.title("Minimum journey time: " + str(vt))

@@ -7,7 +7,8 @@ thomas.dickson@soton.ac.uk
 from context import sail_route
 import numpy as np
 from datetime import datetime
-from canoe_voyaging_utils import datetime_range, load_tongiaki_perf
+from canoe_voyaging_utils import datetime_range, load_tongiaki_perf, \
+                                tong_uncertain
 from sail_route.weather.weather_assistance import return_domain
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route
@@ -19,29 +20,29 @@ from grid_error import calc_h
 def run_simulation_over_days():
     """Run routing simulations between tahiti and marquesas."""
     tahiti = Location(-149.426, -17.651)
-    marquesas = Location(-139.33, -9)
-    craft = load_tongiaki_perf()
-    n_nodes = 160
+    hawaii = Location(-157.92, 21.83)
+    craft = tong_uncertain(1.0, 1.0)
+    n_nodes = 60
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
-    dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
-                              marquesas.lat)
-    node_distance = 1000*dist/n_width
+    dist, bearing = haversine(tahiti.long, tahiti.lat, hawaii.long,
+                              hawaii.lat)
+    node_distance = 2000*dist/n_width
     print("Node height distance is ", dist/n_nodes*1000, " m")
     print("Node width distance is ", node_distance, " m")
     area = node_distance*dist/n_nodes*1000
     total_area = n_nodes * n_width * area
     h = (1/(n_nodes * n_width) * total_area)**0.5
     print("h = {0} ".format(h))
-    r = Route(tahiti, marquesas, n_nodes, n_width,
+    r = Route(tahiti, hawaii, n_nodes, n_width,
               node_distance, craft)
     pyroute_path = "/home/thomas/Documents/pyroute/"
-    wind_fname = pyroute_path + "analysis/poly_data/data_dir/wind_forecast.nc"
-    waves_fname = pyroute_path + "analysis/poly_data/data_dir/wave_data.nc"
-    dia_path = pyroute_path + "analysis/poly_data"
-    sd = datetime(2000, 7, 2, 0, 0)
-    ed = datetime(2000, 7, 3, 0, 0)
+    wind_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wind_forecast.nc"
+    waves_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wave_data.nc"
+    dia_path = pyroute_path + "analysis/poly_data/finney_sims"
+    sd = datetime(1976, 5, 1, 0, 0)
+    ed = datetime(1976, 5, 10, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,

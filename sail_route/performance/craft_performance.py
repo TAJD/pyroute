@@ -18,14 +18,15 @@ def get_perf():
 class polar(object):
     """Store and return information on sailing craft polars."""
 
-    def __init__(self, tws_range, twa_range, perf, unc=0.0, apf=1.0):
+    def __init__(self, tws_range, twa_range, perf, unc=1.0, apf=1.0):
         """Initialise sailing craft performance data.
 
         twa_range, numpy array containing true wind angle values
         tws_range, numpy array containing true wind speed values
         perf, scalar changing performance deterministically
         unc, scalar associating uncertainty with craft
-        apf, scalar between 0.0 and 1.0 returning the acceptable probability of failure of the craft.
+        apf, scalar between 0.0 and 1.0 returning the acceptable
+        probability of failure of the craft.
         """
         self.twa_range = twa_range
         self.tws_range = tws_range
@@ -38,7 +39,7 @@ class polar(object):
         """Return sailing craft performance."""
         p = interp2d(self.twa_range, self.tws_range, self.perf,
                      kind='linear')
-        return p(twa, tws)
+        return p(twa, tws)*self.unc
 
 
 def return_boat_perf():
