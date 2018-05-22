@@ -4,19 +4,15 @@ Thomas Dickson
 thomas.dickson@soton.ac.uk
 """
 
-import sys
-import inspect
 import numpy as np
 import datetime
 from datetime import datetime
 from datetime import timedelta
 import warnings
-# import numba
-#
-# cache = numba.caching.NullCache()
-# cache.flush()
-
+import numba
 from mpl_toolkits.basemap import Basemap
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from sail_route.time_func import timefunc
 from sail_route.route.grid_locations import gen_indx
@@ -25,18 +21,8 @@ from sail_route.performance.cost_function import cost_function
 from sail_route.weather.weather_assistance import return_domain, \
                                        setup_interpolator
 warnings.filterwarnings("ignore")
-
-
-# def recompile_nb_code():
-#     this_module = sys.modules[__name__]
-#     module_members = inspect.getmembers(this_module)
-#
-#     for member_name, member in module_members:
-#         if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
-#             member.recompile()
-#
-# recompile_nb_code()
-
+cache = numba.caching.NullCache()
+cache.flush()
 
 plt.rcParams['savefig.dpi'] = 400
 plt.rcParams['figure.autolayout'] = False

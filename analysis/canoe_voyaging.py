@@ -22,7 +22,7 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     hawaii = Location(-157.92, 21.83)
     craft = tong_uncertain(1.0, 1.0)
-    n_nodes = 60
+    n_nodes = 20
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -42,7 +42,7 @@ def run_simulation_over_days():
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data/finney_sims"
     sd = datetime(1976, 5, 1, 0, 0)
-    ed = datetime(1976, 5, 10, 0, 0)
+    ed = datetime(1976, 5, 2, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,
