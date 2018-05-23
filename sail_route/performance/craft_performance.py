@@ -18,7 +18,8 @@ def get_perf():
 class polar(object):
     """Store and return information on sailing craft polars."""
 
-    def __init__(self, tws_range, twa_range, perf, unc=1.0, apf=1.0):
+    def __init__(self, tws_range, twa_range, perf, unc=1.0, apf=1.0,
+                 failure=None):
         """Initialise sailing craft performance data.
 
         twa_range, numpy array containing true wind angle values
@@ -33,6 +34,7 @@ class polar(object):
         self.perf = perf
         self.unc = unc
         self.apf = apf
+        self.failure = failure
 
     @jit(cache=True)
     def return_perf(self, tws, twa):

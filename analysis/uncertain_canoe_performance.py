@@ -7,12 +7,13 @@ thomas.dickson@soton.ac.uk
 from context import sail_route
 import numpy as np
 from datetime import datetime
-from canoe_voyaging_utils import datetime_range, tong_uncertain
+from canoe_voyaging_utils import tong_uncertain
 from sail_route.weather.weather_assistance import return_domain
 from sail_route.sail_routing import Location, Route, \
-                                   min_time_calculate, plot_mt_route
+                                   min_time_calculate
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
+from sail_route.performance.bbn import gen_env_model
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 
@@ -96,7 +97,7 @@ def run_uncertain_performance_simulation():
     start = Location(-149.426, -17.651)
     finish = Location(-157.92, 21.83)
     start_date = datetime(1976, 5, 1, 0, 0)
-    n_nodes = 60
+    n_nodes = 20
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -117,8 +118,9 @@ def run_uncertain_performance_simulation():
     results = np.zeros_like(unc)
     route_x = []
     route_y = []
+    fm = gen_env_model()
     for n, i in enumerate(unc):
-        craft = tong_uncertain(i, 1.0)
+        craft = tong_uncertain(i, 1.0, fm)
         r = Route(start, finish, n_nodes, n_width, node_distance,
                   craft)
         x, y, land = return_co_ords(r.start.long, r.finish.long,

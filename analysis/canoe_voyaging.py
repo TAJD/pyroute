@@ -15,6 +15,7 @@ from sail_route.sail_routing import Location, Route, \
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
+from pgmpy import *
 
 
 def run_simulation_over_days():

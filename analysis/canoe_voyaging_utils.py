@@ -38,11 +38,11 @@ def load_tongiaki_perf():
     return polar(twa, tws, perf, 1.0, 0.0)
 
 
-def tong_uncertain(unc, apf):
+def tong_uncertain(unc, apf, fm):
     """Load predicted Tongiaki performance."""
     pyroute_path = "/home/thomas/Documents/pyroute/"
     perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv",
                   delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
     twa = np.array([0, 60, 70, 80, 90, 100, 110, 120])
-    return polar(twa, tws, perf, unc, apf)
+    return polar(twa, tws, perf, unc, apf, fm)
