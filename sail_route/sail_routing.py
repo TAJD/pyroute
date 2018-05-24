@@ -20,20 +20,21 @@ from sail_route.time_func import timefunc
 from sail_route.route.grid_locations import gen_indx
 from sail_route.route.solve_route import shortest_path, get_locs
 from sail_route.performance.cost_function import cost_function
+from sail_route.weather.load_weather import process_wind
 from sail_route.weather.weather_assistance import return_domain, \
                                        setup_interpolator
 warnings.filterwarnings("ignore")
 
 
-# def recompile_nb_code():
-#     this_module = sys.modules[__name__]
-#     module_members = inspect.getmembers(this_module)
-#
-#     for member_name, member in module_members:
-#         if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
-#             member.recompile()
-#
-# recompile_nb_code()
+def recompile_nb_code():
+    this_module = sys.modules[__name__]
+    module_members = inspect.getmembers(this_module)
+
+    for member_name, member in module_members:
+        if hasattr(member, 'recompile') and hasattr(member, 'inspect_llvm'):
+            member.recompile()
+
+recompile_nb_code()
 
 
 plt.rcParams['savefig.dpi'] = 400
@@ -80,23 +81,21 @@ def min_time_calculate(route, time, craft, x, y,
     """Calculate the earliest arrival time across co-ordinates."""
     earl_time = np.full_like(x, np.inf)
     indxs, pindxs = gen_indx(x)
-    tws_interp = setup_interpolator(tws)
-    twd_interp = setup_interpolator(twd)
     wd_interp = setup_interpolator(wd)
     wh_interp = setup_interpolator(wh)
     wp_interp = setup_interpolator(wp)
     end_node = 0
     journey_time = 10**10
     for i in range(route.n_width):
-        i_tws = tws_interp([x[0, i], y[0, i], time]).data
-        i_twd = twd_interp([x[0, i], y[0, i], time]).data
+        wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
+        wind_dir = twd.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
         i_wd = wd_interp([x[0, i], y[0, i], time]).data
         i_wh = wh_interp([x[0, i], y[0, i], time]).data
         i_wp = wp_interp([x[0, i], y[0, i], time]).data
         travel_time = cost_function(route.start.long,
                                     route.start.lat,
                                     x[0, i], y[0, i],
-                                    i_tws, i_twd,
+                                    wind_speed, wind_dir,
                                     i_wd, i_wh, i_wp,
                                     craft)
         if (travel_time == np.inf) | (land[0, i] is True):
@@ -110,11 +109,13 @@ def min_time_calculate(route, time, craft, x, y,
                 pass
             else:
                 utime = datetime.fromtimestamp(earl_time[i, j])
-                i_wd = wd_interp([x[i, j], y[i, j], time]).data
-                i_wh = wh_interp([x[i, j], y[i, j], time]).data
-                i_wp = wp_interp([x[i, j], y[i, j], time]).data
-                i_tws = tws_interp([x[i, j], y[i, j], time]).data
-                i_twd = twd_interp([x[i, j], y[i, j], time]).data
+                i_wd = wd_interp([x[i, j], y[i, j], utime]).data
+                i_wh = wh_interp([x[i, j], y[i, j], utime]).data
+                i_wp = wp_interp([x[i, j], y[i, j], utime]).data
+                i_tws = tws.sel(lon_b=x[i, j], lat_b=y[i, j],
+                                time=utime, method='nearest').data
+                i_twd = twd.sel(lon_b=x[i, j], lat_b=y[i, j],
+                                time=utime, method='nearest').data
                 lifetime = utime - time
                 for k in range(route.n_width):
                         if land[i+1, k] is True:
@@ -142,10 +143,10 @@ def min_time_calculate(route, time, craft, x, y,
             pass
         else:
             time = datetime.fromtimestamp(earl_time[-1, i])
-            i_tws = tws_interp([x[-1, i],
-                               y[-1, i], time]).data
-            i_twd = twd_interp([x[-1, i],
-                               y[-1, i], time]).data
+            i_tws = tws.sel(lon_b=x[-1, j], lat_b=y[-1, j],
+                            time=utime, method='nearest').data
+            i_twd = twd.sel(lon_b=x[-1, j], lat_b=y[-1, j],
+                            time=utime, method='nearest').data
             travel_time = cost_function(x[-1, i],
                                         y[-1, i],
                                         route.finish.long,

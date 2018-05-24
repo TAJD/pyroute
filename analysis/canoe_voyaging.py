@@ -10,19 +10,21 @@ from datetime import datetime
 from canoe_voyaging_utils import datetime_range, load_tongiaki_perf, \
                                 tong_uncertain
 from sail_route.weather.weather_assistance import return_domain
+from sail_route.performance.bbn import gen_env_model
+from sail_route.weather.load_weather import process_wind
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
-from pgmpy import *
 
 
 def run_simulation_over_days():
     """Run routing simulations between tahiti and marquesas."""
     tahiti = Location(-149.426, -17.651)
     hawaii = Location(-157.92, 21.83)
-    craft = tong_uncertain(1.0, 1.0)
+    fm = gen_env_model()
+    craft = tong_uncertain(1.0, 1.0, fm)
     n_nodes = 20
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
@@ -50,6 +52,7 @@ def run_simulation_over_days():
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
         tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
+        tws, twd = process_wind(wind_fname, x, y)
         jt, et, x_r, y_r = min_time_calculate(r, t, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
