@@ -9,9 +9,8 @@ import numpy as np
 from datetime import datetime
 from canoe_voyaging_utils import datetime_range, load_tongiaki_perf, \
                                 tong_uncertain
-from sail_route.weather.weather_assistance import return_domain
 from sail_route.performance.bbn import gen_env_model
-from sail_route.weather.load_weather import process_wind
+from sail_route.weather.load_weather import process_wind, process_waves
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route
 from sail_route.performance.cost_function import haversine
@@ -24,7 +23,7 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     hawaii = Location(-157.92, 21.83)
     fm = gen_env_model()
-    craft = tong_uncertain(1.0, 1.0, fm)
+    craft = tong_uncertain(1.0, 0.7, fm)
     n_nodes = 20
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
@@ -40,7 +39,7 @@ def run_simulation_over_days():
     print("h = {0} ".format(h))
     r = Route(tahiti, hawaii, n_nodes, n_width,
               node_distance, craft)
-    pyroute_path = "/home/thomas/Documents/pyroute/"
+    pyroute_path = "/Users/thomasdickson/Documents/python_routing/"
     wind_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wind_forecast.nc"
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data/finney_sims"
@@ -51,22 +50,23 @@ def run_simulation_over_days():
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
-        tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
         tws, twd = process_wind(wind_fname, x, y)
+        wd, wh, wp = process_waves(waves_fname, x, y)
         jt, et, x_r, y_r = min_time_calculate(r, t, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
-        plot_mt_route(t, r, x, y, x_r, y_r, et, jt, dia_path+"/"+str(t))
-        # plot_reliability_route(t, r, x, y, pf_vals, jt, dia_path+"/"+str(t))
+        plot_mt_route(t, r, x, y, x_r, y_r, et, jt, dia_path+"/"+str(t)+"_"+str(craft.apf)+"_")
 
 
 def grid_error():
-    """Perform grid error study for routing given real weather.
+    """
+    Perform grid error study for routing given real weather.
 
     Return a plot of the difference between results as a function
-    of grid error."""
+    of grid error.
+    """
     tahiti = Location(-149.426, -17.651)
     marquesas = Location(-139.33, -9)
     craft = load_tongiaki_perf()
@@ -77,7 +77,6 @@ def grid_error():
     sd = datetime(2000, 7, 1, 0, 0)
     dist, bearing = haversine(tahiti.long, tahiti.lat, marquesas.long,
                               marquesas.lat)
-    tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
     nodes = np.array([i**2 for i in range(7, 15, 2)])
     times = []
     h_vals = []
@@ -88,6 +87,8 @@ def grid_error():
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
+        tws, twd = process_wind(wind_fname, x, y)
+        wd, wh, wp = process_waves(waves_fname, x, y)
         jt, x_route, y_route = min_time_calculate(r, sd, craft,
                                                   x, y, land,
                                                   tws, twd, wd, wh, wp,

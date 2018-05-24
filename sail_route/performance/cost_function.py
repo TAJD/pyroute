@@ -1,4 +1,4 @@
-""" Cost function for routing.
+"""Cost function for routing.
 
 Describing the cost function which calculates the earliest time to be taken
 between two points in the offshore sailing craft domain.
@@ -16,9 +16,11 @@ from sail_route.performance.bbn import env_bbn_interrogate
 
 @njit(fastmath=True, nogil=True)
 def haversine(lon1, lat1, lon2, lat2):
-    """Calculate the great circle distance between two points.
+    """
+    Calculate the great circle distance between two points.
 
-    Return the value in km."""
+    Return the value in km.
+    """
     lon1, lat1, lon2, lat2 = np.radians(np.array([lon1, lat1, lon2, lat2]))
     dlon = lon2 - lon1
     dlat = lat2 - lat1

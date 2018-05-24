@@ -46,6 +46,7 @@ def wave_dir(theta):
 
 @jit(cache=True, nogil=True, fastmath=True)
 def gen_env_model():
+    """Specify BBN."""
     cpd_tws = TabularCPD('TWS', 2, values=[[0.8, 0.2]])
     cpd_twa = TabularCPD('TWA', 2, values=[[0.8, 0.2]])
     cpd_wind = TabularCPD('Wind', 2,
@@ -77,6 +78,7 @@ def gen_env_model():
 
 @jit(cache=True, nogil=True, fastmath=True)
 def env_bbn_interrogate(craft, tws, twa, h, theta):
+    """Interrogate BBN for failure probability."""
     bp = craft.failure
     """Modelling failure as a function of environmental conditions."""
     q = bp.query(variables=['Craft failure'],

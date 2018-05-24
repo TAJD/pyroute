@@ -41,8 +41,11 @@ def regrid_data(ds, longs, lats):
 
 
 def process_wind(path_nc, longs, lats):
-    """Return wind speed and direction data regridded to the
-    location of each node."""
+    """
+    Return wind speed and direction data.
+
+    Data is regridded to the location of each node.
+    """
     ds_u10 = load_dataset(path_nc, 'u10')
     regrid_ds_u10 = regrid_data(ds_u10, longs[:, 0], lats[0, :])
     ds_v10 = load_dataset(path_nc, 'v10')
@@ -52,13 +55,26 @@ def process_wind(path_nc, longs, lats):
     return ws, wind_dir
 
 
+def process_waves(path_nc, longs, lats):
+    """Return wave data."""
+    wh = load_dataset(path_nc, 'swh')
+    wd = load_dataset(path_nc, 'mwd')
+    wp = load_dataset(path_nc, 'mwp')
+    regrid_wh = regrid_data(wh, longs[:, 0], lats[0, :])
+    regrid_wd = regrid_data(wd, longs[:, 0], lats[0, :])
+    regrid_wp = regrid_data(wp, longs[:, 0], lats[0, :])
+    return regrid_wh, regrid_wd, regrid_wp
+
+
 if __name__ == '__main__':
-    sys.path.append(os.path.abspath("/home/thomas/Documents/pyroute/sail_route/route"))
+    sys.path.append(os.path.abspath("/Users/thomasdickson/Documents/python_routing/sail_route/route"))
     from grid_locations import return_co_ords
     def haversine(lon1, lat1, lon2, lat2):
-        """Calculate the great circle distance between two points.
+        """
+        Calculate the great circle distance between two points.
 
-        Return the value in km."""
+        Return the value in km.
+        """
         lon1, lat1, lon2, lat2 = np.radians(np.array([lon1, lat1, lon2, lat2]))
         dlon = lon2 - lon1
         dlat = lat2 - lat1
@@ -80,8 +96,6 @@ if __name__ == '__main__':
     longs, lats, land = return_co_ords(start_long, finish_long,
                                        start_lat, finish_lat,
                                        n_ranks, n_nodes, dist)
-    path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/finney_wind_forecast.nc"
-    ws, wd = process_wind(path, longs, lats)
-    # print(ws[[0], [0]])
-    ind = xr.DataArray([[0], [0]], dims=['lon', 'lat'])
-    print(ws.sel(lon_b=-150.2, lat_b=-14.19))
+    # path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/finney_wind_forecast.nc"
+    wave_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/finney_wave_data.nc"
+    look_in_netcdf(wave_path)

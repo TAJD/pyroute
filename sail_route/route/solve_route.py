@@ -1,4 +1,4 @@
-""" Shortest path calculation.
+"""Shortest path calculation.
 
 Functions to assist with returning the shortest path for a given route.
 

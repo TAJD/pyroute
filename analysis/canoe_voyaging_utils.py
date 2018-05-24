@@ -7,7 +7,6 @@ thomas.dickson@soton.ac.uk
 import numpy as np
 from datetime import timedelta
 from context import sail_route
-from sail_route.weather.weather_assistance import plot_wind_data, generate_gif
 from sail_route.performance.craft_performance import polar
 
 
@@ -21,16 +20,9 @@ def datetime_range(start, end, delta):
         current += delta
 
 
-def plot_wind():
-    """Plot representative wind scenario."""
-    path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/"
-    plot_wind_data(path, path+"/wind_forecast.nc")
-    generate_gif(path, "Polynesian_July")
-
-
 def load_tongiaki_perf():
     """Load predicted Tongiaki voyaging canoe performance."""
-    pyroute_path = "/home/thomas/Documents/pyroute/"
+    pyroute_path = "/Users/thomasdickson/Documents/python_routing"
     perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv",
                   delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
@@ -40,7 +32,7 @@ def load_tongiaki_perf():
 
 def tong_uncertain(unc, apf, fm):
     """Load predicted Tongiaki performance."""
-    pyroute_path = "/home/thomas/Documents/pyroute/"
+    pyroute_path = "/Users/thomasdickson/Documents/python_routing/"
     perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv",
                   delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
