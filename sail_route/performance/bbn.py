@@ -85,7 +85,3 @@ def env_bbn_interrogate(craft, tws, twa, h, theta):
                            'WH': wave_height(h),
                            'WD': wave_dir(theta)})
     return q['Craft failure'].values[-1]
-
-
-if __name__ == '__main__':
-    npt.assert_almost_equal(env_bbn(10.0, 50.0, 1.5, 50.0), 0.0)

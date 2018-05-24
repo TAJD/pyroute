@@ -55,8 +55,8 @@ def plot_uncertain_routes(start, route, x, y, unc, x_r, y_r, results):
     for n, i in enumerate(unc):
         route_x, route_y = map(x_r[n], y_r[n])
         map.plot(route_x, route_y, label="""Perf = {:.2f}\%,
-                    Time = {:.2f} hours""".format(i, results[n]))
-    plt.legend(bbox_to_anchor=(1.1, 1.05), fancybox=True,
+                    Time = {:.0f} hours""".format((i-1)*100, results[n]))
+    plt.legend(bbox_to_anchor=(1.0, 0.5), fancybox=True,
                framealpha=0.5)
     plt.tight_layout()
     return plt
@@ -97,7 +97,7 @@ def run_uncertain_performance_simulation():
     start = Location(-149.426, -17.651)
     finish = Location(-157.92, 21.83)
     start_date = datetime(1976, 5, 1, 0, 0)
-    n_nodes = 20
+    n_nodes = 10
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -136,9 +136,9 @@ def run_uncertain_performance_simulation():
         route_x.append(x_r)
         route_y.append(y_r)
     plot_uncertainty(unc, results)
-    plt.savefig(dia_path+"/unc_vt.png")
+    plt.savefig(dia_path+"/unc_vt_test.png")
     plot_uncertain_routes(start, r, x, y, unc, route_x, route_y, results)
-    plt.savefig(dia_path+"/unc_vt_routes.png")
+    plt.savefig(dia_path+"/unc_vt_routes_test.png")
     # plot_uncertain_routes_hex(start, r, x, y, unc, x_r, y_r, results)
     # plt.show()
 
