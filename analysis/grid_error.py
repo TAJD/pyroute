@@ -1,6 +1,7 @@
 """Calculating grid convergence error.
 
-Based on: Procedure for Estimation and Reporting of Uncertainty Due to Discretization
+Based on: Procedure for Estimation and Reporting of Uncertainty Due to
+Discretization
 in CFD Applications
 
 Thomas Dickson
@@ -22,9 +23,11 @@ def calc_h(N, Delta_A):
 
 
 def return_h(no_nodes, p1, p2):
-    """Return h for a specific route.
+    """
+    Return h for a specific route.
 
-    no_nodes is the number of nodes along one side of the grid"""
+    no_nodes is the number of nodes along one side of the grid.
+    """
     dist, bearing = haversine(p1.long, p1.lat, p2.long, p2.lat)
     no_nodes = no_nodes**2
     node_distance = (dist/0.5399565)/no_nodes

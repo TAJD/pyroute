@@ -57,10 +57,15 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
                   craft, lifetime=None):
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
+    if True in np.isnan([tws, twd, i_wd, i_wh, i_wp]):
+        return np.inf
     twa = dir_to_relative(bearing, twd)
     wave_dir = dir_to_relative(bearing, i_wd)
     speed = craft.return_perf(np.abs(twa), tws)
-    fc = env_bbn_interrogate(craft, tws, twd, i_wh, wave_dir)
+    if craft.apf < 1.0:
+        fc = env_bbn_interrogate(craft, tws, twd, i_wh, wave_dir)
+    else:
+        fc = 0.0
     if fc > craft.apf:
         return np.inf
     elif speed < 0.3:

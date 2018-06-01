@@ -1,0 +1,77 @@
+Running SLURM prolog script on red020.cluster.local
+===============================================================================
+Job started on Fri Jun  1 14:06:57 BST 2018
+Job ID          : 91297
+Job name        : sub_grid_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red020
+Job Output Follows ...
+===============================================================================
+Traceback (most recent call last):
+  File "pandas/_libs/index.pyx", line 447, in pandas._libs.index.DatetimeEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 958, in pandas._libs.hashtable.Int64HashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 964, in pandas._libs.hashtable.Int64HashTable.get_item
+KeyError: 199756800000000000
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/pandas/core/indexes/base.py", line 3063, in get_loc
+    return self._engine.get_loc(key)
+  File "pandas/_libs/index.pyx", line 419, in pandas._libs.index.DatetimeEngine.get_loc
+  File "pandas/_libs/index.pyx", line 449, in pandas._libs.index.DatetimeEngine.get_loc
+KeyError: Timestamp('1976-05-01 00:00:00')
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "pandas/_libs/index.pyx", line 447, in pandas._libs.index.DatetimeEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 958, in pandas._libs.hashtable.Int64HashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 964, in pandas._libs.hashtable.Int64HashTable.get_item
+KeyError: 199756800000000000
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 111, in <module>
+  File "<stdin>", line 97, in grid_error
+  File "/mainfs/home/td7g11/pyroute/sail_route/time_func.py", line 10, in f_timer
+    result = f(*args, **kwargs)
+  File "/mainfs/home/td7g11/pyroute/sail_route/sail_routing.py", line 86, in min_time_calculate
+    wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/dataarray.py", line 780, in sel
+    tolerance=tolerance, **indexers)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/dataset.py", line 1488, in sel
+    tolerance, **indexers)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/coordinates.py", line 353, in remap_label_indexers
+    obj, v_indexers, method=method, tolerance=tolerance
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/indexing.py", line 250, in remap_label_indexers
+    dim, method, tolerance)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/indexing.py", line 179, in convert_label_indexer
+    indexer = get_loc(index, label.item(), method, tolerance)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/xarray/core/indexing.py", line 109, in get_loc
+    return index.get_loc(label, **kwargs)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/pandas/core/indexes/datetimes.py", line 1604, in get_loc
+    return Index.get_loc(self, key, method, tolerance)
+  File "/scratch/td7g11/routing/lib/python3.6/site-packages/pandas/core/indexes/base.py", line 3065, in get_loc
+    return self._engine.get_loc(self._maybe_cast_indexer(key))
+  File "pandas/_libs/index.pyx", line 419, in pandas._libs.index.DatetimeEngine.get_loc
+  File "pandas/_libs/index.pyx", line 449, in pandas._libs.index.DatetimeEngine.get_loc
+KeyError: Timestamp('1976-05-01 00:00:00')
+==============================================================================
+Running epilogue script on red020.
+
+Submit time  : 2018-06-01T14:07:09
+Start time   : 2018-06-01T14:07:09
+End time     : 2018-06-01T14:07:13
+Elapsed time : 00:00:04 (Timelimit=20:00:00)
+
+   JobName     MaxRSS  MaxVMSize    Elapsed 
+---------- ---------- ---------- ---------- 
+sub_grid_+                         00:00:04 
+     batch          0          0   00:00:04 
+

@@ -45,7 +45,7 @@ plt.rcParams['font.size'] = 16
 plt.rcParams['lines.linewidth'] = 2.0
 plt.rcParams['lines.markersize'] = 8
 plt.rcParams['legend.fontsize'] = 12
-plt.rcParams['text.usetex'] = True
+plt.rcParams['text.usetex'] = False
 plt.rcParams['font.family'] = "serif"
 plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
@@ -83,11 +83,16 @@ def min_time_calculate(route, time, craft, x, y,
     end_node = 0
     journey_time = 10**10
     for i in range(route.n_width):
-        wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        wind_dir = twd.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wd = wd.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wh = wh.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wp = wp.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
+        wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i],
+                             time=time, method='nearest').data
+        wind_dir = twd.sel(lon_b=x[0, i], lat_b=y[0, i],
+                           time=time, method='nearest').data
+        i_wd = wd.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
+        i_wh = wh.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
+        i_wp = wp.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
         travel_time = cost_function(route.start.long,
                                     route.start.lat,
                                     x[0, i], y[0, i],
@@ -209,11 +214,11 @@ def timestamp_to_delta_time(start, x):
     return round_timedelta(delta, timedelta(minutes=1))
 
 
-def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
+def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     """Plot minimum time output from routing simulations."""
     vt = datetime.fromtimestamp(jt) - start
     # ul = jt + vt.total_seconds()/6
-    add_param = 2
+    add_param = fill
     res = 'i'
     plt.figure(figsize=(6, 10))
     map = Basemap(projection='tmerc',
@@ -253,3 +258,28 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     plt.title("Minimum journey time: " + str(vt))
     plt.savefig(fname+"min_time"+".png")
     plt.clf()
+
+
+def plot_isochrones(start, route, x, y, et, fill, fname):
+    """Plot isochrones for shortest path."""
+    plt.figure(figsize=(6, 10))
+    map = Basemap(projection='merc',
+                  ellps='WGS84',
+                  lat_0=(y.min() + y.max())/2,
+                  lon_0=(x.min() + x.max())/2,
+                  llcrnrlon=x.min()-fill,
+                  llcrnrlat=y.min()-fill,
+                  urcrnrlon=x.max()+fill,
+                  urcrnrlat=y.max()+fill,
+                  resolution='i')  # f = fine resolution
+    map.drawcoastlines()
+    x, y = map(x, y)
+    ctf = map.contourf(x, y, et, cmap='gray')
+    y_tick_labs = [timestamp_to_delta_time(start, x) for x in
+                   np.linspace(et[et < 1e308].min(),
+                               et[et < 1e308].max(), 9)]
+    cbar = plt.colorbar(ctf, orientation='horizontal')
+    cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+    map.scatter(x[et > 1e308], y[et > 1e308], color='red',
+                s=1, label='No go')
+    plt.savefig(fname+"isochrones"+".png")

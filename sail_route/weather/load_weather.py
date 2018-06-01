@@ -33,7 +33,7 @@ def regrid_data(ds, longs, lats):
     """Regrid dataset to new longs and lats."""
     ds_out = xr.Dataset({'lat': (['lat_b'], lats),
                          'lon': (['lon_b'], longs), })
-    regridder = xe.Regridder(ds, ds_out, 'bilinear', reuse_weights=True)
+    regridder = xe.Regridder(ds, ds_out, 'patch', reuse_weights=True)
     ds0 = regridder(ds)
     ds0.coords['lat_b'] = ('lat_b', ds0['lat'].values)
     ds0.coords['lon_b'] = ('lon_b', ds0['lon'].values)
@@ -66,9 +66,25 @@ def process_waves(path_nc, longs, lats):
     return regrid_wh, regrid_wd, regrid_wp
 
 
+def process_era5_weather(path_nc, longs, lats):
+    """Return era5 weather data."""
+    wisp = load_dataset(path_nc, 'wind')
+    widi = load_dataset(path_nc, 'dwi')
+    wh = load_dataset(path_nc, 'shts')
+    wd = load_dataset(path_nc, 'mdts')
+    wp = load_dataset(path_nc, 'mpts')
+    rg_wisp = regrid_data(wisp, longs[:, 0], lats[0, :])
+    rg_widi = regrid_data(widi, longs[:, 0], lats[0, :])
+    rg_wh = regrid_data(wh, longs[:, 0], lats[0, :])
+    rg_wd = regrid_data(wd, longs[:, 0], lats[0, :])
+    rg_wp = regrid_data(wp, longs[:, 0], lats[0, :])
+    return rg_wisp, rg_widi, rg_wh, rg_wd, rg_wp
+
+
 if __name__ == '__main__':
-    sys.path.append(os.path.abspath("/Users/thomasdickson/Documents/python_routing/sail_route/route"))
+    sys.path.append(os.path.abspath("/home/td7g11/pyroute/sail_route/route/"))
     from grid_locations import return_co_ords
+
     def haversine(lon1, lat1, lon2, lat2):
         """
         Calculate the great circle distance between two points.
@@ -83,11 +99,12 @@ if __name__ == '__main__':
         dist = 6371 * 2 * np.arcsin(np.sqrt(a)) * 0.5399565
         bearing = np.rad2deg(np.arctan2(dlat, dlon))
         return dist, bearing
-
-    start_long = -149.426
-    start_lat = -17.651
-    finish_long = -157.92
-    finish_lat = 21.83
+    # start = Location(-2.3700, 50.256)
+    # finish = Location(-61.777, 17.038)
+    start_long = -2.37
+    start_lat = 50.256
+    finish_long = -61.777
+    finish_lat = 17.083
     n_ranks = 10
     n_nodes = 10
     dist, bearing = haversine(start_long, start_lat, finish_long,
@@ -96,6 +113,6 @@ if __name__ == '__main__':
     longs, lats, land = return_co_ords(start_long, finish_long,
                                        start_lat, finish_lat,
                                        n_ranks, n_nodes, dist)
-    # path = "/home/thomas/Documents/pyroute/analysis/poly_data/data_dir/finney_wind_forecast.nc"
-    wave_path = "/Users/thomasdickson/Documents/python_routing/analysis/poly_data/data_dir/finney_wave_data.nc"
-    look_in_netcdf(wave_path)
+    weather_path = "/home/td7g11/pyroute/analysis/asv_transat/2016_jan_march.nc"
+    look_in_netcdf(weather_path)
+    process_era5_weather(weather_path, longs, lats)

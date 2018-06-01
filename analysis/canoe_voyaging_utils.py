@@ -9,6 +9,8 @@ from datetime import timedelta
 from context import sail_route
 from sail_route.performance.craft_performance import polar
 
+pyroute_path = "/mainfs/home/td7g11/pyroute"
+
 
 def datetime_range(start, end, delta):
     """Generate range of dates."""
@@ -22,7 +24,6 @@ def datetime_range(start, end, delta):
 
 def load_tongiaki_perf():
     """Load predicted Tongiaki voyaging canoe performance."""
-    pyroute_path = "/Users/thomasdickson/Documents/python_routing"
     perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv",
                   delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
@@ -32,7 +33,6 @@ def load_tongiaki_perf():
 
 def tong_uncertain(unc, apf, fm):
     """Load predicted Tongiaki performance."""
-    pyroute_path = "/Users/thomasdickson/Documents/python_routing/"
     perf = np.genfromtxt(pyroute_path+"/analysis/poly_data/data_dir/tongiaki_vpp.csv",
                   delimiter=",")
     tws = np.array([4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 20])
