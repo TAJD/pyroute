@@ -1,0 +1,12 @@
+#!/bin/bash
+
+#SBATCH --time=40:00:00
+#SBATCH --nodes=1
+
+module load conda
+. /local/software/conda/miniconda-py3/etc/profile.d/conda.sh
+source activate "/scratch/td7g11/routing"
+
+cd $HOME/pyroute/analysis
+
+python < "asv_transat_route.py" > asv_routing_output

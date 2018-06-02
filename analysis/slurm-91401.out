@@ -1,0 +1,33 @@
+Running SLURM prolog script on red020.cluster.local
+===============================================================================
+Job started on Fri Jun  1 19:56:34 BST 2018
+Job ID          : 91401
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red020
+Job Output Follows ...
+===============================================================================
+Traceback (most recent call last):
+  File "<stdin>", line 7, in <module>
+  File "/mainfs/home/td7g11/pyroute/analysis/context.py", line 6, in <module>
+    from sail_route.route.grid_locations import return_co_ords
+  File "/mainfs/home/td7g11/pyroute/sail_route/route/grid_locations.py", line 17, in <module>
+    from numba import jit, njit
+ModuleNotFoundError: No module named 'numba'
+==============================================================================
+Running epilogue script on red020.
+
+Submit time  : 2018-06-01T19:56:46
+Start time   : 2018-06-01T19:56:46
+End time     : 2018-06-01T19:56:47
+Elapsed time : 00:00:01 (Timelimit=1-16:00:00)
+
+   JobName     MaxRSS  MaxVMSize    Elapsed 
+---------- ---------- ---------- ---------- 
+   asv_job                         00:00:01 
+     batch          0          0   00:00:01 
+

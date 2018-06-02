@@ -221,7 +221,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     add_param = fill
     res = 'i'
     plt.figure(figsize=(6, 10))
-    map = Basemap(projection='tmerc',
+    map = Basemap(projection='merc',
                   ellps='WGS84',
                   lat_0=(y.min() + y.max())/2,
                   lon_0=(x.min() + x.max())/2,

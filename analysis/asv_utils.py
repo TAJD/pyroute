@@ -21,7 +21,10 @@ pyroute_path = "/mainfs/home/td7g11/pyroute/"
 
 def asv_uncertain(unc, apf, fm):
     """Load Maribot Vane performance data."""
-    perf = np.genfromtxt(pyroute_path+"...")
-    tws = np.array([4, 8, 12, 16, 20])
-    twa = np.array([25, 40, 55, 70, 85, 100, 115, 130, 145, 160])
-    return polar(twa, tws, unc, apf, fm)
+    perf = np.genfromtxt(pyroute_path+"analysis/asv_transat/maribot_vane.csv",
+                         delimiter=",")
+    tws = np.array([0, 4, 8, 12, 16, 20])
+    twa = np.array([0, 25, 40, 55, 70, 85, 100, 115, 130, 145, 160])
+    return polar(twa.astype(float), tws.astype(float),
+                 np.transpose(perf).astype(float),
+                 unc, apf, fm)
