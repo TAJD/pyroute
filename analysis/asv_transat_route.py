@@ -20,6 +20,7 @@ from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
 
 
+
 pp = "/home/td7g11/pyroute/"
 
 
@@ -71,10 +72,10 @@ def asv_grid_error():
     """
     Check convergence of solution.
 
-    Using Mar
+    Using Maribot Vane performance estimates for the transatlantic voyage.
     """
-    start = Location(-149.426, -17.651)
-    finish = Location(-157.92, 21.83)
+    start = Location(-2.3700, 50.256)
+    finish = Location(-61.777, 17.038)
     fm = gen_env_model()
     craft = asv_uncertain(1.0, 1.0, fm)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
@@ -108,6 +109,54 @@ def asv_grid_error():
         np.savetxt(f, np.c_[nodes, h_vals, times], delimiter='\t')
 
 
+def reliability_uncertainty_routing():
+    """
+    Running routing simulations at a specific grid number for a range of
+    reliability levels and performance uncertainty levels.
+    """
+    rel_levels = np.array([0.7, 0.89, 1])
+    unc_levels = np.array([0.95, 1.0, 1.05])
+    test_matrix = np.array(np.meshgrid(rel_levels,
+                                       unc_levels)).T.reshape(-1, 2)
+    fts = []
+    start = Location(-2.3700, 50.256)
+    finish = Location(-61.777, 17.038)
+    fm = gen_env_model()
+    craft = asv_uncertain(1.0, 1.0, fm)
+    weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
+    diagram_path = pp + "analysis/asv_transat/results/"
+    sd = datetime(2016, 1, 2, 6, 0)
+    dist, bearing = haversine(start.long, start.lat,
+                              finish.long, finish.lat)
+    nodes = 160
+    node_distance = dist/nodes
+    r = Route(start, finish, nodes, nodes,
+              node_distance*1000.0, craft)
+    x, y, land = return_co_ords(r.start.long, r.finish.long,
+                                r.start.lat, r.finish.lat,
+                                r.n_ranks, r.n_width, r.d_node)
+    tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
+    for i in range(test_matrix.shape[0]):
+        craft = asv_uncertain(test_matrix[i, 1], test_matrix[i, 0], fm)
+
+        jt, et, x_r, y_r = min_time_calculate(r, sd, craft,
+                                              x, y, land,
+                                              tws, twd, wd, wh, wp)
+        vt = datetime.fromtimestamp(jt) - sd
+        fts.append(vt.total_seconds())
+    results = np.array(fts)
+    print(results)
+    save_array = np.hstack((test_matrix, results[..., None]))
+    print(save_array)
+    with open(diagram_path+"unc_reliability_routing_"+strftime("""%Y-%m-%d
+                                                               %H:%M:%S""",
+                                                              gmtime())+".txt",
+             'wb') as f:
+        np.savetxt(f, save_array, delimiter='\t', fmt='%1.3f')
+
+
+
 if __name__ == '__main__':
     # run_simulation_over_days()
-    asv_grid_error()
+    # asv_grid_error()
+    reliability_uncertainty_routing()

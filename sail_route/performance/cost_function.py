@@ -63,7 +63,7 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     wave_dir = dir_to_relative(bearing, i_wd)
     speed = craft.return_perf(np.abs(twa), tws)
     if craft.apf < 1.0:
-        fc = env_bbn_interrogate(craft, tws, twd, i_wh, wave_dir)
+        fc = env_bbn_interrogate(craft.failure, tws, twd, i_wh, wave_dir)
     else:
         fc = 0.0
     if fc > craft.apf:

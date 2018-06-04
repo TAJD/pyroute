@@ -9,7 +9,6 @@ from pgmpy.models import BayesianModel
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from numba import jit
-import numpy.testing as npt
 
 
 @jit(fastmath=True, nopython=True, cache=True)
@@ -44,14 +43,14 @@ def wave_dir(theta):
         return 0
 
 
-@jit(cache=True, nogil=True, fastmath=True)
+@jit(nogil=True, fastmath=True)
 def gen_env_model():
     """Specify BBN."""
     cpd_tws = TabularCPD('TWS', 2, values=[[0.8, 0.2]])
     cpd_twa = TabularCPD('TWA', 2, values=[[0.8, 0.2]])
     cpd_wind = TabularCPD('Wind', 2,
-                          values=[[1, 0.5, 0.5, 0.0],
-                                  [0.0, 0.5, 0.5, 1.0]],
+                          values=[[1, 0.1, 0.1, 0.0],
+                                  [0.0, 0.9, 0.9, 1.0]],
                           evidence=['TWA', 'TWS'],
                           evidence_card=[2, 2])
     cpd_wh = TabularCPD('WH', 2, values=[[0.8, 0.2]])
@@ -77,13 +76,20 @@ def gen_env_model():
 
 
 @jit(cache=True, nogil=True, fastmath=True)
-def env_bbn_interrogate(craft, tws, twa, h, theta):
-    """Interrogate BBN for failure probability."""
-    bp = craft.failure
-    """Modelling failure as a function of environmental conditions."""
+def env_bbn_interrogate(bp, tws, twa, h, theta):
+    """
+    Interrogate BBN for failure probability.
+
+    Modelling failure as a function of environmental conditions.
+    """
     q = bp.query(variables=['Craft failure'],
                  evidence={'TWS': wind_speed(tws),
                            'TWA': wind_dir(twa),
                            'WH': wave_height(h),
                            'WD': wave_dir(theta)})
     return q['Craft failure'].values[-1]
+
+
+if __name__ == '__main__':
+    model = gen_env_model()
+    print(env_bbn_interrogate(model, 10, 60, 0, 40))
