@@ -8,6 +8,7 @@ import sys
 import inspect
 import numpy as np
 import datetime
+import textwrap
 from datetime import datetime
 from datetime import timedelta
 import warnings
@@ -45,7 +46,7 @@ plt.rcParams['font.size'] = 16
 plt.rcParams['lines.linewidth'] = 2.0
 plt.rcParams['lines.markersize'] = 8
 plt.rcParams['legend.fontsize'] = 12
-plt.rcParams['text.usetex'] = True
+plt.rcParams['text.usetex'] = False
 plt.rcParams['font.family'] = "serif"
 plt.rcParams['font.serif'] = "cm"
 plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
@@ -83,11 +84,16 @@ def min_time_calculate(route, time, craft, x, y,
     end_node = 0
     journey_time = 10**10
     for i in range(route.n_width):
-        wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        wind_dir = twd.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wd = wd.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wh = wh.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
-        i_wp = wp.sel(lon_b=x[0, i], lat_b=y[0, i], time=time).data
+        wind_speed = tws.sel(lon_b=x[0, i], lat_b=y[0, i],
+                             time=time, method='nearest').data
+        wind_dir = twd.sel(lon_b=x[0, i], lat_b=y[0, i],
+                           time=time, method='nearest').data
+        i_wd = wd.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
+        i_wh = wh.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
+        i_wp = wp.sel(lon_b=x[0, i], lat_b=y[0, i],
+                      time=time, method='nearest').data
         travel_time = cost_function(route.start.long,
                                     route.start.lat,
                                     x[0, i], y[0, i],
@@ -209,14 +215,14 @@ def timestamp_to_delta_time(start, x):
     return round_timedelta(delta, timedelta(minutes=1))
 
 
-def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
+def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     """Plot minimum time output from routing simulations."""
     vt = datetime.fromtimestamp(jt) - start
     # ul = jt + vt.total_seconds()/6
-    add_param = 2
+    add_param = fill
     res = 'i'
     plt.figure(figsize=(6, 10))
-    map = Basemap(projection='tmerc',
+    map = Basemap(projection='merc',
                   ellps='WGS84',
                   lat_0=(y.min() + y.max())/2,
                   lon_0=(x.min() + x.max())/2,
@@ -229,16 +235,32 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
     r_s_x, r_s_y = map(route.start.long, route.start.lat)
     map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
     r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
-    parallels = np.arange(-90.0, 90.0, 5.)
+    parallels = np.arange(-90.0, 90.0, 20.)
     map.drawparallels(parallels, labels=[1, 0, 0, 0])
-    meridians = np.arange(180., 360., 5.)
+    meridians = np.arange(180., 360., 20.)
+    map.fillcontinents(color='black')
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
-    x_r, y_r = map(x_r, y_r)
-    map.plot(x_r, y_r, color='green', label='Minimum time path')
+    if vt.total_seconds() < 8640000:
+        x_r, y_r = map(x_r, y_r)
+        map.plot(x_r, y_r, color='green', label='Minimum time path')
+    start1_lon = -16.0
+    start1_lat = 51.0
+    start2_lon = -8.0
+    start2_lat = 45.0
+    fin_lon = -60.0
+    fin1_lat = 25.0
+    fin2_lat = 10.0
+
+    s1lon, s1lat = map(start1_lon, start1_lat)
+    s2lon, s2lat = map(start2_lon, start2_lat)
+    f1lon, f1lat = map(fin_lon, fin1_lat)
+    f2lon, f2lat = map(fin_lon, fin2_lat)
+    plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
+    plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
     try:
         x, y = map(x, y)
-        ctf = map.contourf(x, y, et, cmap='gray')
+        ctf = map.contourf(x, y, et, cmap='bwr')
         y_tick_labs = [timestamp_to_delta_time(start, x) for x in
                        np.linspace(et[et < 8640000].min(),
                                    et[et < 8640000].max(), 9)]
@@ -248,8 +270,53 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fname):
                     s=1, label='No go')
     except ValueError:
         pass
-    plt.legend(loc='best', fancybox=True, framealpha=0.5)
-    plt.tight_layout()
-    plt.title("Minimum journey time: " + str(vt))
+    plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
+    # plt.tight_layout()
+    tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
+    plt.title(tit)
     plt.savefig(fname+"min_time"+".png")
     plt.clf()
+
+
+def plot_isochrones(start, route, x, y, et, fill, fname):
+    """Plot isochrones for shortest path."""
+    plt.figure(figsize=(6, 10))
+    map = Basemap(projection='merc',
+                  ellps='WGS84',
+                  lat_0=(y.min() + y.max())/2,
+                  lon_0=(x.min() + x.max())/2,
+                  llcrnrlon=x.min()-fill,
+                  llcrnrlat=y.min()-fill,
+                  urcrnrlon=x.max()+fill,
+                  urcrnrlat=y.max()+fill,
+                  resolution='i')  # f = fine resolution
+    map.drawcoastlines()
+    start1_lon = -16.0
+    start1_lat = 51.0
+    start2_lon = -8.0
+    start2_lat = 45.0
+    fin_lon = -60.0
+    fin1_lat = 25.0
+    fin2_lat = 10.0
+
+    s1lon, s1lat = map(start1_lon, start1_lat)
+    s2lon, s2lat = map(start2_lon, start2_lat)
+    f1lon, f1lat = map(fin_lon, fin1_lat)
+    f2lon, f2lat = map(fin_lon, fin2_lat)
+    plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
+    plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
+
+    try:
+        x, y = map(x, y)
+        ctf = map.contourf(x, y, et, cmap='bwr')
+        y_tick_labs = [timestamp_to_delta_time(start, x) for x in
+                       np.linspace(et[et < 8640000].min(),
+                                   et[et < 8640000].max(), 9)]
+        cbar = plt.colorbar(ctf, orientation='horizontal')
+        cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+        map.scatter(x[et > 1e308], y[et > 1e308], color='red',
+                    s=1, label='No go')
+    except ValueError:
+        pass
+    map.fillcontinents(color='black')
+    plt.savefig(fname+"isochrones"+".png")

@@ -9,12 +9,12 @@ from pgmpy.models import BayesianModel
 from pgmpy.factors.discrete import TabularCPD
 from pgmpy.inference import BeliefPropagation
 from numba import jit
-import numpy.testing as npt
 
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_speed(tws):
-    if tws > 20.0:
+    """Wind speed failure function."""
+    if tws > 30:
         return 1
     else:
         return 0
@@ -22,7 +22,8 @@ def wind_speed(tws):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_dir(twa):
-    if twa < 30.0:
+    """Wind direction failure function."""
+    if twa < 10.0:
         return 1
     else:
         return 0
@@ -30,7 +31,8 @@ def wind_dir(twa):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_height(h):
-    if h > 2.0:
+    """Wave height failure function."""
+    if h > 2.5:
         return 1
     else:
         return 0
@@ -38,27 +40,30 @@ def wave_height(h):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_dir(theta):
+    """Wave direction failure function."""
     if theta < 30.0:
         return 1
     else:
         return 0
 
 
-@jit(cache=True, nogil=True, fastmath=True)
+@jit(nogil=True, fastmath=True)
 def gen_env_model():
     """Specify BBN."""
     cpd_tws = TabularCPD('TWS', 2, values=[[0.8, 0.2]])
     cpd_twa = TabularCPD('TWA', 2, values=[[0.8, 0.2]])
     cpd_wind = TabularCPD('Wind', 2,
-                          values=[[1, 0.5, 0.5, 0.0],
-                                  [0.0, 0.5, 0.5, 1.0]],
+                          values=[[1, 0.1, 0.1, 0.0],
+                                  [0.0, 0.9, 0.9, 1.0]],
                           evidence=['TWA', 'TWS'],
                           evidence_card=[2, 2])
     cpd_wh = TabularCPD('WH', 2, values=[[0.8, 0.2]])
     cpd_wd = TabularCPD('WD', 2, values=[[0.8, 0.2]])
     cpd_waves = TabularCPD('Waves', 2,
-                           values=[[1, 0.2, 0.2, 0.0],
-                                   [0.0, 0.8, 0.8, 1.0]],
+                           values=[[1, 0.1, 0.1, 0.0],  # normal vals
+                                   [0.0, 0.9, 0.9, 1.0]],
+                           # values = [[1, 0.999, 0.999, 0.998],
+                                     # [0.0, 0.001, 0.001, 0.002]], # min failure
                            evidence=['WH', 'WD'],
                            evidence_card=[2, 2])
     cpd_fail = TabularCPD('Craft failure', 2,
@@ -77,13 +82,24 @@ def gen_env_model():
 
 
 @jit(cache=True, nogil=True, fastmath=True)
-def env_bbn_interrogate(craft, tws, twa, h, theta):
-    """Interrogate BBN for failure probability."""
-    bp = craft.failure
-    """Modelling failure as a function of environmental conditions."""
+def env_bbn_interrogate(bp, tws, twa, h, theta):
+    """
+    Interrogate BBN for failure probability.
+
+    Modelling failure as a function of environmental conditions.
+    """
     q = bp.query(variables=['Craft failure'],
                  evidence={'TWS': wind_speed(tws),
                            'TWA': wind_dir(twa),
                            'WH': wave_height(h),
                            'WD': wave_dir(theta)})
     return q['Craft failure'].values[-1]
+
+
+if __name__ == '__main__':
+    model = gen_env_model()
+    print("No failure: ", env_bbn_interrogate(model, 10, 60, 0, 40))
+    print("Wave direction condition: ", env_bbn_interrogate(model, 10, 60, 0, 10))
+    print("Full wave failure: ", env_bbn_interrogate(model, 10, 60, 4, 10))
+    print("Wind speed failure: ", env_bbn_interrogate(model, 40, 60, 4, 10))
+    print("Wind cond failure: ", env_bbn_interrogate(model, 40, 10, 4, 10))

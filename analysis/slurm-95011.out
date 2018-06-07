@@ -1,0 +1,13 @@
+Running SLURM prolog script on red084.cluster.local
+===============================================================================
+Job started on Thu Jun  7 08:52:35 BST 2018
+Job ID          : 95011
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red084
+Job Output Follows ...
+===============================================================================

@@ -1,0 +1,17 @@
+Nodes in rank:  750
+Nodes in width:  750
+Node height distance is  3229.968539370828  m
+Node width distance is  6459.937078741656  m
+h = 4567.865314416641 
+Create weight file: bilinear_59x35_750x750.nc
+Reuse existing file: bilinear_59x35_750x750.nc
+Create weight file: bilinear_30x18_750x750.nc
+Reuse existing file: bilinear_30x18_750x750.nc
+Reuse existing file: bilinear_30x18_750x750.nc
+min_time_calculate took 68214.594316 seconds
+Journey time is:  28 days, 2:29:47.665582
+reate weight file: bilinear_12x21_49x49.nc
+Reuse existing file: bilinear_12x21_49x49.nc
+Create weight file: bilinear_7x11_49x49.nc
+Reuse existing file: bilinear_7x11_49x49.nc
+Reuse existing file: bilinear_7x11_49x49.nc
