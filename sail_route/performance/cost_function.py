@@ -11,10 +11,10 @@ thomas.dickson@soton.ac.uk
 import numpy as np
 import datetime
 from numba import jit, njit
-from sail_route.performance.bbn import env_bbn_interrogate
+# from sail_route.performance.bbn import env_bbn_interrogate
 
 
-@njit(fastmath=True, nogil=True)
+@njit(fastmath=True, nogil=True, cache=True)
 def haversine(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points.
@@ -31,7 +31,7 @@ def haversine(lon1, lat1, lon2, lat2):
     return dist, bearing
 
 
-@njit(fastmath=True, nogil=True)
+@njit(fastmath=True, nogil=True, cache=True)
 def wind_strength_step(x):
     """Wind strength failure function."""
     return 1 * (x > 20.0)
@@ -46,7 +46,7 @@ def craft_failure_model(time, tws, twa):
     return np.min((np.max((pf_time, pf_wind)), 1.0))
 
 
-@njit(fastmath=True, nogil=True)
+@njit(fastmath=True, nogil=True, cache=True)
 def dir_to_relative(x, y):
     """Calculate relative angle to bearing."""
     return np.absolute((x - y + 180) % 360 - 180)
@@ -58,12 +58,13 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     """Calculate the time taken to transit between two locations."""
     dist, bearing = haversine(x1, y1, x2, y2)
     twa = dir_to_relative(bearing, twd)
-    wave_dir = dir_to_relative(bearing, i_wd)
     speed = craft.return_perf(np.abs(twa), tws)
-    fc = env_bbn_interrogate(craft, tws, twd, i_wh, wave_dir)
-    if fc > craft.apf:
-        return np.inf
-    elif speed < 0.3:
+    # wave_dir = dir_to_relative(bearing, i_wd)
+    # fc = env_bbn_interrogate(craft, tws, twd, i_wh, wave_dir)
+    # if fc > craft.apf:
+    #     return np.inf
+    # elif speed < 0.3:
+    if speed < 0.1:
         return np.inf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed))

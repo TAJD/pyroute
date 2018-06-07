@@ -8,7 +8,7 @@ from context import sail_route
 import numpy as np
 from datetime import datetime
 from canoe_voyaging_utils import tong_uncertain
-from sail_route.weather.weather_assistance import return_domain
+from sail_route.weather.load_weather import process_wind, process_waves
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate
 from sail_route.performance.cost_function import haversine
@@ -23,7 +23,7 @@ def plot_uncertainty(perfs, times):
     plt.figure()
     plt.scatter(perfs, times, label='Estimated')
     plt.scatter(1.0, 34*24, label='Hokolua')
-    plt.xlabel("Performance variation")
+    plt.xlabel(r"$\%$ Performance variation")
     plt.ylabel("Voyage time (hours)")
     plt.legend(loc='best', fancybox=True, framealpha=0.5)
     return plt
@@ -97,7 +97,7 @@ def run_uncertain_performance_simulation():
     start = Location(-149.426, -17.651)
     finish = Location(-157.92, 21.83)
     start_date = datetime(1976, 5, 1, 0, 0)
-    n_nodes = 10
+    n_nodes = 150
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -110,7 +110,7 @@ def run_uncertain_performance_simulation():
     total_area = n_nodes * n_width * area
     h = (1/(n_nodes * n_width) * total_area)**0.5
     print("h = {0} ".format(h))
-    pyroute_path = "/home/thomas/Documents/pyroute/"
+    pyroute_path = "/Users/thomasdickson/Documents/python_routing/"
     wind_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wind_forecast.nc"
     waves_fname = pyroute_path + "analysis/poly_data/data_dir/finney_wave_data.nc"
     dia_path = pyroute_path + "analysis/poly_data/finney_sims"
@@ -126,7 +126,8 @@ def run_uncertain_performance_simulation():
         x, y, land = return_co_ords(r.start.long, r.finish.long,
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
-        tws, twd, wd, wh, wp = return_domain(wind_fname, waves_fname)
+        tws, twd = process_wind(wind_fname, x, y)
+        wd, wh, wp = process_waves(waves_fname, x, y)
         jt, et, x_r, y_r = min_time_calculate(r, start_date, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
@@ -136,9 +137,9 @@ def run_uncertain_performance_simulation():
         route_x.append(x_r)
         route_y.append(y_r)
     plot_uncertainty(unc, results)
-    plt.savefig(dia_path+"/unc_vt_test.png")
+    plt.savefig(dia_path+"/unc_vt_test_"+str(h)+".png")
     plot_uncertain_routes(start, r, x, y, unc, route_x, route_y, results)
-    plt.savefig(dia_path+"/unc_vt_routes_test.png")
+    plt.savefig(dia_path+"/unc_vt_routes_test_"+str(h)+".png")
     # plot_uncertain_routes_hex(start, r, x, y, unc, x_r, y_r, results)
     # plt.show()
 
