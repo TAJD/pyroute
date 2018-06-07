@@ -20,7 +20,6 @@ from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
 
 
-
 pp = "/home/td7g11/pyroute/"
 
 
@@ -29,8 +28,8 @@ def run_simulation_over_days():
     start = Location(-2.3700, 50.256)
     finish = Location(-61.777, 17.038)
     fm = gen_env_model()
-    craft = asv_uncertain(1.0, 1.0, fm)
-    n_nodes = 100
+    craft = asv_uncertain(1.0, 0.8, fm)
+    n_nodes = 60
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -47,8 +46,8 @@ def run_simulation_over_days():
               node_distance, craft)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
     dia_path = pp + "analysis/asv_transat/results/"
-    sd = datetime(2016, 1, 2, 6, 0)
-    ed = datetime(2016, 1, 3, 6, 0)
+    sd = datetime(2016, 1, 1, 6, 0)
+    ed = datetime(2016, 1, 2, 6, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
     for t in dt:
         x, y, land = return_co_ords(r.start.long, r.finish.long,
@@ -61,11 +60,12 @@ def run_simulation_over_days():
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
         fill = 10
+        string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
         plot_isochrones(t, r, x, y, et, fill,
-                        dia_path+str(t)+"_"+str(craft.apf)+"_"+str(n_nodes)+"_")
+                        dia_path+string+"_")
         plot_mt_route(t, r, x, y, x_r, y_r,
                       et, jt, fill,
-                      dia_path+str(t)+"_"+str(craft.apf)+"_"+str(n_nodes)+"_")
+                      dia_path+string+"_")
 
 
 def asv_grid_error():
@@ -80,14 +80,14 @@ def asv_grid_error():
     craft = asv_uncertain(1.0, 1.0, fm)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
     diagram_path = pp + "analysis/asv_transat/results/"
-    sd = datetime(2016, 1, 2, 6, 0)
+    sd = datetime(2016, 1, 1, 6, 0)
     dist, bearing = haversine(start.long, start.lat,
                               finish.long, finish.lat)
-    nodes = np.array([1280])
+    nodes = np.array([640])
     times = []
     h_vals = []
     for count, node in enumerate(nodes):
-        node_distance = dist/node
+        node_distance = 4000*dist/node
         r = Route(start, finish, node, node,
                   node_distance*1000.0, craft)
         x, y, land = return_co_ords(r.start.long, r.finish.long,
@@ -110,11 +110,8 @@ def asv_grid_error():
 
 
 def reliability_uncertainty_routing():
-    """
-    Running routing simulations at a specific grid number for a range of
-    reliability levels and performance uncertainty levels.
-    """
-    rel_levels = np.array([0.7, 0.89, 1])
+    """Routing for a range of uncertainty and reliability levels."""
+    rel_levels = np.array([0.81, 0.91, 1.0])
     unc_levels = np.array([0.95, 1.0, 1.05])
     test_matrix = np.array(np.meshgrid(rel_levels,
                                        unc_levels)).T.reshape(-1, 2)
@@ -128,8 +125,8 @@ def reliability_uncertainty_routing():
     sd = datetime(2016, 1, 2, 6, 0)
     dist, bearing = haversine(start.long, start.lat,
                               finish.long, finish.lat)
-    nodes = 160
-    node_distance = dist/nodes
+    nodes = 60
+    node_distance = 4000*dist/nodes
     r = Route(start, finish, nodes, nodes,
               node_distance*1000.0, craft)
     x, y, land = return_co_ords(r.start.long, r.finish.long,
@@ -155,8 +152,7 @@ def reliability_uncertainty_routing():
         np.savetxt(f, save_array, delimiter='\t', fmt='%1.3f')
 
 
-
 if __name__ == '__main__':
-    # run_simulation_over_days()
+    run_simulation_over_days()
     # asv_grid_error()
-    reliability_uncertainty_routing()
+    # reliability_uncertainty_routing()

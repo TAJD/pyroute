@@ -1,0 +1,32 @@
+Running SLURM prolog script on red084.cluster.local
+===============================================================================
+Job started on Thu Jun  7 10:47:56 BST 2018
+Job ID          : 95055
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red084
+Job Output Follows ...
+===============================================================================
+Traceback (most recent call last):
+  File "<stdin>", line 156, in <module>
+  File "<stdin>", line 68, in run_simulation_over_days
+  File "/mainfs/home/td7g11/pyroute/sail_route/sail_routing.py", line 244, in plot_mt_route
+    if vt < 1e308:
+TypeError: '<' not supported between instances of 'datetime.timedelta' and 'float'
+==============================================================================
+Running epilogue script on red084.
+
+Submit time  : 2018-06-07T10:47:58
+Start time   : 2018-06-07T10:47:59
+End time     : 2018-06-07T10:48:59
+Elapsed time : 00:01:00 (Timelimit=1-12:00:00)
+
+   JobName     MaxRSS  MaxVMSize    Elapsed 
+---------- ---------- ---------- ---------- 
+   asv_job                         00:01:00 
+     batch  12129636K  14184088K   00:01:00 
+

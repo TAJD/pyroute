@@ -13,7 +13,8 @@ from numba import jit
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_speed(tws):
-    if tws > 20.0:
+    """Wind speed failure function."""
+    if tws > 30:
         return 1
     else:
         return 0
@@ -21,7 +22,8 @@ def wind_speed(tws):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_dir(twa):
-    if twa < 30.0:
+    """Wind direction failure function."""
+    if twa < 10.0:
         return 1
     else:
         return 0
@@ -29,7 +31,8 @@ def wind_dir(twa):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_height(h):
-    if h > 2.0:
+    """Wave height failure function."""
+    if h > 2.5:
         return 1
     else:
         return 0
@@ -37,6 +40,7 @@ def wave_height(h):
 
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_dir(theta):
+    """Wave direction failure function."""
     if theta < 30.0:
         return 1
     else:
@@ -56,8 +60,10 @@ def gen_env_model():
     cpd_wh = TabularCPD('WH', 2, values=[[0.8, 0.2]])
     cpd_wd = TabularCPD('WD', 2, values=[[0.8, 0.2]])
     cpd_waves = TabularCPD('Waves', 2,
-                           values=[[1, 0.2, 0.2, 0.0],
-                                   [0.0, 0.8, 0.8, 1.0]],
+                           values=[[1, 0.1, 0.1, 0.0],  # normal vals
+                                   [0.0, 0.9, 0.9, 1.0]],
+                           # values = [[1, 0.999, 0.999, 0.998],
+                                     # [0.0, 0.001, 0.001, 0.002]], # min failure
                            evidence=['WH', 'WD'],
                            evidence_card=[2, 2])
     cpd_fail = TabularCPD('Craft failure', 2,
@@ -92,4 +98,8 @@ def env_bbn_interrogate(bp, tws, twa, h, theta):
 
 if __name__ == '__main__':
     model = gen_env_model()
-    print(env_bbn_interrogate(model, 10, 60, 0, 40))
+    print("No failure: ", env_bbn_interrogate(model, 10, 60, 0, 40))
+    print("Wave direction condition: ", env_bbn_interrogate(model, 10, 60, 0, 10))
+    print("Full wave failure: ", env_bbn_interrogate(model, 10, 60, 4, 10))
+    print("Wind speed failure: ", env_bbn_interrogate(model, 40, 60, 4, 10))
+    print("Wind cond failure: ", env_bbn_interrogate(model, 40, 10, 4, 10))

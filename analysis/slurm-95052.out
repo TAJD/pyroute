@@ -1,0 +1,26 @@
+Running SLURM prolog script on red084.cluster.local
+===============================================================================
+Job started on Thu Jun  7 10:45:30 BST 2018
+Job ID          : 95052
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red084
+Job Output Follows ...
+===============================================================================
+==============================================================================
+Running epilogue script on red084.
+
+Submit time  : 2018-06-07T10:45:31
+Start time   : 2018-06-07T10:45:32
+End time     : 2018-06-07T10:46:34
+Elapsed time : 00:01:02 (Timelimit=1-12:00:00)
+
+   JobName     MaxRSS  MaxVMSize    Elapsed 
+---------- ---------- ---------- ---------- 
+   asv_job                         00:01:02 
+     batch  12123452K  14184780K   00:01:02 
+

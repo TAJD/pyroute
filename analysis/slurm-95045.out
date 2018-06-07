@@ -1,26 +1,27 @@
-Running SLURM prolog script on red169.cluster.local
+Running SLURM prolog script on red084.cluster.local
 ===============================================================================
-Job started on Mon Jun  4 14:45:46 BST 2018
-Job ID          : 91879
+Job started on Thu Jun  7 10:25:30 BST 2018
+Job ID          : 95045
 Job name        : asv_job
 WorkDir         : /mainfs/home/td7g11/pyroute/analysis
 Partition       : batch
 Num hosts       : 1
 Num cores       : 1
 Num of tasks    : 1
-Hosts allocated : red169
+Hosts allocated : red084
 Job Output Follows ...
 ===============================================================================
+slurmstepd: error: *** JOB 95045 ON red084 CANCELLED AT 2018-06-07T10:26:10 ***
 ==============================================================================
-Running epilogue script on red169.
+Running epilogue script on red084.
 
-Submit time  : 2018-06-04T14:45:50
-Start time   : 2018-06-04T14:45:50
-End time     : 2018-06-04T16:45:27
-Elapsed time : 01:59:37 (Timelimit=1-16:00:00)
+Submit time  : 2018-06-07T10:25:32
+Start time   : 2018-06-07T10:25:32
+End time     : 2018-06-07T10:26:12
+Elapsed time : 00:00:40 (Timelimit=1-12:00:00)
 
    JobName     MaxRSS  MaxVMSize    Elapsed 
 ---------- ---------- ---------- ---------- 
-   asv_job                         01:59:37 
-     batch  18586320K  21303620K   01:59:37 
+   asv_job                         00:00:40 
+     batch  15441180K  18134784K   00:00:40 
 
