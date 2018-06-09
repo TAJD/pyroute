@@ -241,39 +241,44 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     map.fillcontinents(color='black')
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
-    if vt.total_seconds() < 8640000:
+    if vt.total_seconds() < 10000000:
         x_r, y_r = map(x_r, y_r)
         map.plot(x_r, y_r, color='green', label='Minimum time path')
-    start1_lon = -16.0
-    start1_lat = 51.0
-    start2_lon = -8.0
-    start2_lat = 45.0
-    fin_lon = -60.0
-    fin1_lat = 25.0
-    fin2_lat = 10.0
-
-    s1lon, s1lat = map(start1_lon, start1_lat)
-    s2lon, s2lat = map(start2_lon, start2_lat)
-    f1lon, f1lat = map(fin_lon, fin1_lat)
-    f2lon, f2lat = map(fin_lon, fin2_lat)
-    plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
-    plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
-    try:
         x, y = map(x, y)
         ctf = map.contourf(x, y, et, cmap='bwr')
         y_tick_labs = [timestamp_to_delta_time(start, x) for x in
-                       np.linspace(et[et < 8640000].min(),
-                                   et[et < 8640000].max(), 9)]
+                       np.linspace(et[et < 1e307].min(),
+                                   et[et < 1e307].max(), 9)]
+        # y_tick_labs = [timestamp_to_delta_time(start, x) for x in
+        #                np.linspace(et.min(),
+        #                            et.max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
-        map.scatter(x[et > 1e308], y[et > 1e308], color='red',
-                    s=1, label='No go')
-    except ValueError:
-        pass
+        tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
+        plt.title(tit)
+    else:
+        plt.title("Voyage failed")
+        try:
+            map.scatter(x[et == np.inf], y[et == np.inf], color='red',
+                        s=1, label='No go')
+        except ValueError:
+            pass
+    # start1_lon = -16.0
+    # start1_lat = 51.0
+    # start2_lon = -8.0
+    # start2_lat = 45.0
+    # fin_lon = -60.0
+    # fin1_lat = 25.0
+    # fin2_lat = 10.0
+    #
+    # s1lon, s1lat = map(start1_lon, start1_lat)
+    # s2lon, s2lat = map(start2_lon, start2_lat)
+    # f1lon, f1lat = map(fin_lon, fin1_lat)
+    # f2lon, f2lat = map(fin_lon, fin2_lat)
+    # plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
+    # plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
     plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
     # plt.tight_layout()
-    tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
-    plt.title(tit)
     plt.savefig(fname+"min_time"+".png")
     plt.clf()
 
@@ -305,18 +310,17 @@ def plot_isochrones(start, route, x, y, et, fill, fname):
     f2lon, f2lat = map(fin_lon, fin2_lat)
     plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
     plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
-
+    x, y = map(x, y)
     try:
-        x, y = map(x, y)
         ctf = map.contourf(x, y, et, cmap='bwr')
         y_tick_labs = [timestamp_to_delta_time(start, x) for x in
-                       np.linspace(et[et < 8640000].min(),
-                                   et[et < 8640000].max(), 9)]
+                       np.linspace(et[et < 10000000].min(),
+                                   et[et < 10000000].max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
-        map.scatter(x[et > 1e308], y[et > 1e308], color='red',
-                    s=1, label='No go')
     except ValueError:
         pass
+    map.scatter(x[et > 9000000], y[et > 9000000], color='red',
+                s=1, label='No go')
     map.fillcontinents(color='black')
     plt.savefig(fname+"isochrones"+".png")

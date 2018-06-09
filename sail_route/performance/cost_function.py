@@ -32,21 +32,6 @@ def haversine(lon1, lat1, lon2, lat2):
 
 
 @njit(fastmath=True, nogil=True)
-def wind_strength_step(x):
-    """Wind strength failure function."""
-    return 1 * (x > 20.0)
-
-
-@jit(cache=True)
-def craft_failure_model(time, tws, twa):
-    """Return probability of failure as a function of time and environment."""
-    time = time/datetime.timedelta(hours=1)
-    pf_wind = wind_strength_step(tws)
-    pf_time = np.exp(0.001*time) - 1
-    return np.min((np.max((pf_time, pf_wind)), 1.0))
-
-
-@njit(fastmath=True, nogil=True)
 def dir_to_relative(x, y):
     """Calculate relative angle to bearing."""
     return np.absolute((x - y + 180) % 360 - 180)

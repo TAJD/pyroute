@@ -81,6 +81,22 @@ def process_era5_weather(path_nc, longs, lats):
     return rg_wisp, rg_widi, rg_wh, rg_wd, rg_wp
 
 
+def change_area_values(array, value, lon1, lat1, lon2, lat2):
+    """
+    Change the weather values in a given rectangular area.
+
+    array is an xarray DataArray
+    value is the new value
+    lon1 and lat1 are the coordinates of the bottom left corner of the area
+    lon2 and lat2 are the coordinates of the top right of the area
+    """
+    lc = array.coords['lon']
+    la = array.coords['lat']
+    array.loc[dict(lon_b=lc[(lc > lon1) & (lc < lon2)],
+                   lat_b=la[(la > lat1) & (la < lat2)])] = value
+    return array
+
+
 if __name__ == '__main__':
     sys.path.append(os.path.abspath("/home/td7g11/pyroute/sail_route/route/"))
     from grid_locations import return_co_ords
@@ -114,5 +130,9 @@ if __name__ == '__main__':
                                        start_lat, finish_lat,
                                        n_ranks, n_nodes, dist)
     weather_path = "/home/td7g11/pyroute/analysis/asv_transat/2016_jan_march.nc"
-    look_in_netcdf(weather_path)
-    process_era5_weather(weather_path, longs, lats)
+    # look_in_netcdf(weather_path)
+    # rg_wisp, rg_widi, rg_wh, rg_wd, rg_wp = process_era5_weather(weather_path, longs, lats)
+    wisp = load_dataset(weather_path, 'wind')
+    print(wisp.mean())
+    wisp = change_area_values(wisp, 10.0, 300, 20, 350, 60)
+    print(wisp.mean())

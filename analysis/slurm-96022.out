@@ -1,0 +1,30 @@
+Running SLURM prolog script on red004.cluster.local
+===============================================================================
+Job started on Sat Jun  9 09:44:49 BST 2018
+Job ID          : 96022
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red004
+Job Output Follows ...
+===============================================================================
+==============================================================================
+Running epilogue script on red004.
+
+Submit time  : 2018-06-09T09:44:59
+Start time   : 2018-06-09T09:45:00
+End time     : 2018-06-09T09:52:45
+Elapsed time : 00:07:45 (Timelimit=1-12:00:00)
+
+Job ID: 96022
+Cluster: i5
+User/Group: td7g11/mm
+State: COMPLETED (exit code 0)
+Cores: 1
+CPU Utilized: 00:07:55
+CPU Efficiency: 102.15% of 00:07:45 core-walltime
+Memory Utilized: 15.37 GB
+

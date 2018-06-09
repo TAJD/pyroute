@@ -1,0 +1,31 @@
+Running SLURM prolog script on red004.cluster.local
+===============================================================================
+Job started on Sat Jun  9 09:49:29 BST 2018
+Job ID          : 96023
+Job name        : asv_job
+WorkDir         : /mainfs/home/td7g11/pyroute/analysis
+Partition       : batch
+Num hosts       : 1
+Num cores       : 1
+Num of tasks    : 1
+Hosts allocated : red004
+Job Output Follows ...
+===============================================================================
+slurmstepd: error: *** JOB 96023 ON red004 CANCELLED AT 2018-06-09T09:52:41 ***
+==============================================================================
+Running epilogue script on red004.
+
+Submit time  : 2018-06-09T09:49:39
+Start time   : 2018-06-09T09:49:40
+End time     : 2018-06-09T09:52:52
+Elapsed time : 00:03:12 (Timelimit=1-12:00:00)
+
+Job ID: 96023
+Cluster: i5
+User/Group: td7g11/mm
+State: CANCELLED (exit code 0)
+Cores: 1
+CPU Utilized: 00:03:04
+CPU Efficiency: 95.83% of 00:03:12 core-walltime
+Memory Utilized: 15.31 GB
+

@@ -6,18 +6,38 @@ thomas.dickson@soton.ac.uk
 """
 from context import sail_route
 import numpy as np
+import textwrap
 from time import gmtime, strftime
 from datetime import datetime
 from canoe_voyaging_utils import datetime_range
 from asv_utils import asv_uncertain
 from sail_route.performance.bbn import gen_env_model
-from sail_route.weather.load_weather import process_era5_weather
+from sail_route.weather.load_weather import process_era5_weather, change_area_values
 from sail_route.sail_routing import Location, Route, \
-                                   min_time_calculate, plot_mt_route, \
-                                   plot_isochrones
+                                   min_time_calculate, timestamp_to_delta_time
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
+
+
+import matplotlib # removing this causes a segmentation fault
+matplotlib.use('Agg')
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
+plt.rcParams['savefig.dpi'] = 400
+plt.rcParams['figure.autolayout'] = False
+plt.rcParams['figure.figsize'] = 10, 6
+plt.rcParams['axes.labelsize'] = 14
+plt.rcParams['axes.titlesize'] = 20
+plt.rcParams['font.size'] = 16
+plt.rcParams['lines.linewidth'] = 2.0
+plt.rcParams['lines.markersize'] = 8
+plt.rcParams['legend.fontsize'] = 12
+plt.rcParams['text.usetex'] = False
+plt.rcParams['font.family'] = "serif"
+plt.rcParams['font.serif'] = "cm"
+plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
+                                         \\usepackage{type1cm}"""
 
 
 pp = "/home/td7g11/pyroute/"
@@ -25,11 +45,16 @@ pp = "/home/td7g11/pyroute/"
 
 def run_simulation_over_days():
     """Run transat routing simulations."""
-    start = Location(-2.3700, 50.256)
-    finish = Location(-61.777, 17.038)
+    # Specify the bounds of the whole region
+    lon1 = -59.9
+    lat1 = -1.77
+    lon2 = -6.4
+    lat2 = 61.5
+    start = Location(-12.0, 45.0)
+    finish = Location(-60.0, 17.5)
     fm = gen_env_model()
-    craft = asv_uncertain(1.0, 0.8, fm)
-    n_nodes = 60
+    craft = asv_uncertain(1.0, 0.89, fm)
+    n_nodes = 40
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -46,14 +71,32 @@ def run_simulation_over_days():
               node_distance, craft)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
     dia_path = pp + "analysis/asv_transat/results/"
-    sd = datetime(2016, 1, 1, 6, 0)
-    ed = datetime(2016, 1, 2, 6, 0)
+    sd = datetime(2008, 1, 2, 6, 0)
+    ed = datetime(2008, 1, 3, 6, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
+    x, y, land = return_co_ords(r.start.long, r.finish.long,
+                                r.start.lat, r.finish.lat,
+                                r.n_ranks, r.n_width, r.d_node)
+    tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
+    tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
+    twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
+    wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
+    wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
+    a2 = 5.0
+    lon1_area2 = -40.0-a2
+    lon2_area2 = -40.0+a2
+    lat1_area2 = 33.0-a2
+    lat2_area2 = 33.0+a2
+    wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
+                            lat2_area2)
+    a1 = 3.0
+    lon1_area1 = -40.0-a1
+    lon2_area1 = -40.0+a1
+    lat1_area1 = 33.0-a1
+    lat2_area1 = 33.0+a1
+    wd = change_area_values(wd, 240.0, lon1_area1, lat1_area1,
+                            lon2_area1, lat2_area1)
     for t in dt:
-        x, y, land = return_co_ords(r.start.long, r.finish.long,
-                                    r.start.lat, r.finish.lat,
-                                    r.n_ranks, r.n_width, r.d_node)
-        tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
         jt, et, x_r, y_r = min_time_calculate(r, t, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
@@ -61,11 +104,9 @@ def run_simulation_over_days():
         print("Journey time is: ", vt)
         fill = 10
         string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
-        plot_isochrones(t, r, x, y, et, fill,
-                        dia_path+string+"_")
-        plot_mt_route(t, r, x, y, x_r, y_r,
-                      et, jt, fill,
-                      dia_path+string+"_")
+        plot_failure_route(t, r, x, y, x_r, y_r,
+                           et, jt, fill,
+                           dia_path+string+"_")
 
 
 def asv_grid_error():
@@ -150,6 +191,57 @@ def reliability_uncertainty_routing():
                                                               gmtime())+".txt",
              'wb') as f:
         np.savetxt(f, save_array, delimiter='\t', fmt='%1.3f')
+
+
+def plot_failure_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
+    """Plot minimum time output from routing simulations."""
+    vt = datetime.fromtimestamp(jt) - start
+    # ul = jt + vt.total_seconds()/6
+    add_param = fill
+    res = 'i'
+    plt.figure(figsize=(6, 10))
+    map = Basemap(projection='merc',
+                  ellps='WGS84',
+                  lat_0=(y.min() + y.max())/2,
+                  lon_0=(x.min() + x.max())/2,
+                  llcrnrlon=x.min()-add_param,
+                  llcrnrlat=y.min()-add_param,
+                  urcrnrlon=x.max()+add_param,
+                  urcrnrlat=y.max()+add_param,
+                  resolution=res)  # f = fine resolution
+    map.drawcoastlines()
+    r_s_x, r_s_y = map(route.start.long, route.start.lat)
+    map.scatter(r_s_x, r_s_y, color='red', s=50, label='Start')
+    r_f_x, r_f_y = map(route.finish.long, route.finish.lat)
+    parallels = np.arange(-90.0, 90.0, 20.)
+    map.drawparallels(parallels, labels=[1, 0, 0, 0])
+    meridians = np.arange(180., 360., 20.)
+    map.fillcontinents(color='black')
+    map.drawmeridians(meridians, labels=[0, 0, 0, 1])
+    map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
+    if vt.total_seconds() < 10000000:
+        x_r, y_r = map(x_r, y_r)
+        map.plot(x_r, y_r, color='green', label='Minimum time path')
+        x, y = map(x, y)
+        ctf = map.contourf(x, y, et, cmap='bwr')
+        y_tick_labs = [timestamp_to_delta_time(start, x) for x in
+                       np.linspace(et[et < 1e307].min(),
+                                   et[et < 1e307].max(), 9)]
+        cbar = plt.colorbar(ctf, orientation='horizontal')
+        cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+        tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
+        plt.title(tit)
+    else:
+        plt.title("Voyage failed")
+        try:
+            map.scatter(x[et == np.inf], y[et == np.inf], color='red',
+                        s=1, label='No go')
+        except ValueError:
+            pass
+    plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
+    # plt.tight_layout()
+    plt.savefig(fname+"min_time"+".png")
+    plt.clf()
 
 
 if __name__ == '__main__':
