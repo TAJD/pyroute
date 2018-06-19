@@ -14,7 +14,7 @@ from numba import jit
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_speed(tws):
     """Wind speed failure function."""
-    if tws > 30:
+    if tws > 25:
         return 1
     else:
         return 0
@@ -23,7 +23,7 @@ def wind_speed(tws):
 @jit(fastmath=True, nopython=True, cache=True)
 def wind_dir(twa):
     """Wind direction failure function."""
-    if twa < 10.0:
+    if twa < 0.0:
         return 1
     else:
         return 0
@@ -32,7 +32,7 @@ def wind_dir(twa):
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_height(h):
     """Wave height failure function."""
-    if h > 2.5:
+    if h > 3:
         return 1
     else:
         return 0
@@ -41,7 +41,7 @@ def wave_height(h):
 @jit(fastmath=True, nopython=True, cache=True)
 def wave_dir(theta):
     """Wave direction failure function."""
-    if theta < 30.0:
+    if theta < 60.0:
         return 1
     else:
         return 0
@@ -53,8 +53,10 @@ def gen_env_model():
     cpd_tws = TabularCPD('TWS', 2, values=[[0.8, 0.2]])
     cpd_twa = TabularCPD('TWA', 2, values=[[0.8, 0.2]])
     cpd_wind = TabularCPD('Wind', 2,
-                          values=[[1, 0.1, 0.1, 0.0],
-                                  [0.0, 0.9, 0.9, 1.0]],
+                          # values=[[1, 0.1, 0.1, 0.0],
+                          #         [0.0, 0.9, 0.9, 1.0]],
+                           values = [[1, 0.999, 0.999, 0.998],
+                                     [0.0, 0.001, 0.001, 0.002]], # min
                           evidence=['TWA', 'TWS'],
                           evidence_card=[2, 2])
     cpd_wh = TabularCPD('WH', 2, values=[[0.8, 0.2]])
@@ -63,7 +65,7 @@ def gen_env_model():
                            values=[[1, 0.1, 0.1, 0.0],  # normal vals
                                    [0.0, 0.9, 0.9, 1.0]],
                            # values = [[1, 0.999, 0.999, 0.998],
-                                     # [0.0, 0.001, 0.001, 0.002]], # min failure
+                           #           [0.0, 0.001, 0.001, 0.002]], # min failure
                            evidence=['WH', 'WD'],
                            evidence_card=[2, 2])
     cpd_fail = TabularCPD('Craft failure', 2,

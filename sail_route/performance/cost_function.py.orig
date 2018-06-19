@@ -1,0 +1,74 @@
+"""Cost function for routing.
+
+Describing the cost function which calculates the earliest time to be taken
+between two points in the offshore sailing craft domain.
+
+Thomas Dickson
+thomas.dickson@soton.ac.uk
+25/04/18
+"""
+
+import numpy as np
+from numpy import radians, sin, cos, sqrt, arcsin, arctan2
+import datetime
+from numba import jit, njit
+from sail_route.performance.bbn import env_bbn_interrogate
+
+
+@njit(fastmath=True, nogil=True)
+def haversine(lon1, lat1, lon2, lat2):
+    """
+    Calculate the great circle distance between two points.
+
+    Return the value in km.
+    """
+    R = 6372.8  # Earth radius in kilometers
+
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+    lon1 = radians(lon1)
+    lon2 = radians(lon2)
+
+<<<<<<< HEAD
+    a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
+    c = 2*arcsin(sqrt(a))
+    theta = arctan2(sin(dLon)*cos(lat2),
+                    cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(dLon))
+    theta = (np.rad2deg(theta) + 360) % 360
+    return R*c*0.5399565, theta
+
+
+=======
+>>>>>>> 5bbced9a6890598b24825973eee7a088c2f2adc4
+@njit(fastmath=True, nogil=True)
+def dir_to_relative(x, y):
+    """Calculate relative angle to bearing."""
+    return np.absolute((x - y + 180) % 360 - 180)
+
+
+@jit(cache=True, nogil=True)
+def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
+                  craft, lifetime=None):
+    """Calculate the time taken to transit between two locations."""
+    dist, bearing = haversine(x1, y1, x2, y2)
+    if True in np.isnan([tws, twd, i_wd, i_wh, i_wp]):
+        return np.inf
+    twa = dir_to_relative(bearing, twd)
+    speed = craft.return_perf(twa, tws)
+    if craft.apf < 1.0:
+        wave_dir = dir_to_relative(bearing, i_wd)
+        fc = env_bbn_interrogate(craft.failure, tws, twd, i_wh, wave_dir)
+    else:
+        fc = 0.0
+    if fc > craft.apf:
+        return np.inf
+    elif speed < 0.3:
+        return np.inf
+    else:
+        return datetime.timedelta(hours=np.float64(dist/speed))
+
+
+if __name__ == '__main__':
+    print(haversine(-88.67, 36.12, -118.40, 33.94))

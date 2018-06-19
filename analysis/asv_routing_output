@@ -1,12 +1,12 @@
-Nodes in rank:  60
-Nodes in width:  60
-Node height distance is  57599.45089739724  m
-Node width distance is  230397.80358958896  m
-h = 115198.90179479448 
-Reuse existing file: patch_721x1437_60x60.nc
-Reuse existing file: patch_721x1437_60x60.nc
-Reuse existing file: patch_721x1437_60x60.nc
-Reuse existing file: patch_721x1437_60x60.nc
-Reuse existing file: patch_721x1437_60x60.nc
-min_time_calculate took 2.092844 seconds
-Journey time is:  98939 days, 11:46:40
+Nodes in rank:  40
+Nodes in width:  40
+Node height distance is  72654.31627607495  m
+Node width distance is  290617.26510429976  m
+h = 145308.63255214988 
+Reuse existing file: patch_721x1437_40x40.nc
+Reuse existing file: patch_721x1437_40x40.nc
+Reuse existing file: patch_721x1437_40x40.nc
+Reuse existing file: patch_721x1437_40x40.nc
+Reuse existing file: patch_721x1437_40x40.nc
+min_time_calculate took 404.437633 seconds
+Journey time is:  36 days, 17:12:17.131658

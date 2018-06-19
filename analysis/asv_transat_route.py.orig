@@ -19,7 +19,10 @@ from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
 
+<<<<<<< HEAD
 # pp = "/Users/thomasdickson/Documents/python_routing/"
+=======
+
 import matplotlib # removing this causes a segmentation fault
 matplotlib.use('Agg')
 from mpl_toolkits.basemap import Basemap
@@ -40,6 +43,7 @@ plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
                                          \\usepackage{type1cm}"""
 
 
+>>>>>>> 5bbced9a6890598b24825973eee7a088c2f2adc4
 pp = "/home/td7g11/pyroute/"
 
 
@@ -53,8 +57,13 @@ def run_simulation_over_days():
     start = Location(-12.0, 45.0)
     finish = Location(-60.0, 17.5)
     fm = gen_env_model()
+<<<<<<< HEAD
+    craft = asv_uncertain(1.0, 0.8, fm)
+    n_nodes = 10t
+=======
     craft = asv_uncertain(1.0, 0.89, fm)
     n_nodes = 40
+>>>>>>> 5bbced9a6890598b24825973eee7a088c2f2adc4
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
