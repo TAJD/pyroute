@@ -1,5 +1,13 @@
-Create weight file: bilinear_12x21_50x50.nc
-Reuse existing file: bilinear_12x21_50x50.nc
-Create weight file: bilinear_7x11_50x50.nc
-Reuse existing file: bilinear_7x11_50x50.nc
-Reuse existing file: bilinear_7x11_50x50.nc
+Nodes in rank:  160
+Nodes in width:  160
+Node height distance is  15140.477528300755  m
+Node width distance is  30280.955056601513  m
+h = 21411.868661328004 
+Reuse existing file: patch_59x35_160x160.nc
+Reuse existing file: patch_59x35_160x160.nc
+Reuse existing file: patch_30x18_160x160.nc
+Reuse existing file: patch_30x18_160x160.nc
+Reuse existing file: patch_30x18_160x160.nc
+min_time_calculate took 972.350139 seconds
+Journey time is:  29 days, 2:02:11.428539
+

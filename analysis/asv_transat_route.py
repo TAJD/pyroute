@@ -23,6 +23,7 @@ from grid_error import calc_h
 import matplotlib # removing this causes a segmentation fault
 matplotlib.use('Agg')
 from mpl_toolkits.basemap import Basemap
+from matplotlib.patches import Polygon
 import matplotlib.pyplot as plt
 plt.rcParams['savefig.dpi'] = 400
 plt.rcParams['figure.autolayout'] = False
@@ -42,6 +43,18 @@ plt.rcParams['text.latex.preamble'] = """\\usepackage{subdepth},
 
 pp = "/home/td7g11/pyroute/"
 
+a1 = 3.0
+lon1_area1 = -40.0-a1
+lon2_area1 = -40.0+a1
+lat1_area1 = 33.0-a1
+lat2_area1 = 33.0+a1
+
+a2 = 5.0
+lon1_area2 = -40.0-a2
+lon2_area2 = -40.0+a2
+lat1_area2 = 33.0-a2
+lat2_area2 = 33.0+a2
+
 
 def run_simulation_over_days():
     """Run transat routing simulations."""
@@ -53,8 +66,8 @@ def run_simulation_over_days():
     start = Location(-12.0, 45.0)
     finish = Location(-60.0, 17.5)
     fm = gen_env_model()
-    craft = asv_uncertain(1.0, 0.89, fm)
-    n_nodes = 40
+    craft = asv_uncertain(1.0, 1.0, fm)
+    n_nodes = 620
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -67,46 +80,36 @@ def run_simulation_over_days():
     total_area = n_nodes * n_width * area
     h = (1/(n_nodes * n_width) * total_area)**0.5
     print("h = {0} ".format(h))
-    r = Route(start, finish, n_nodes, n_width,
-              node_distance, craft)
-    weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
-    dia_path = pp + "analysis/asv_transat/results/"
-    sd = datetime(2008, 1, 2, 6, 0)
-    ed = datetime(2008, 1, 3, 6, 0)
-    dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
-    x, y, land = return_co_ords(r.start.long, r.finish.long,
-                                r.start.lat, r.finish.lat,
-                                r.n_ranks, r.n_width, r.d_node)
-    tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
-    tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
-    twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
-    wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
-    wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
-    a2 = 5.0
-    lon1_area2 = -40.0-a2
-    lon2_area2 = -40.0+a2
-    lat1_area2 = 33.0-a2
-    lat2_area2 = 33.0+a2
-    wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
-                            lat2_area2)
-    a1 = 3.0
-    lon1_area1 = -40.0-a1
-    lon2_area1 = -40.0+a1
-    lat1_area1 = 33.0-a1
-    lat2_area1 = 33.0+a1
-    wd = change_area_values(wd, 240.0, lon1_area1, lat1_area1,
-                            lon2_area1, lat2_area1)
-    for t in dt:
-        jt, et, x_r, y_r = min_time_calculate(r, t, craft,
-                                              x, y, land,
-                                              tws, twd, wd, wh, wp)
-        vt = datetime.fromtimestamp(jt) - t
-        print("Journey time is: ", vt)
-        fill = 10
-        string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
-        plot_failure_route(t, r, x, y, x_r, y_r,
-                           et, jt, fill,
-                           dia_path+string+"_")
+    # r = Route(start, finish, n_nodes, n_width,
+    #           node_distance, craft)
+    # weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
+    # dia_path = pp + "analysis/asv_transat/results/"
+    # sd = datetime(2008, 1, 2, 6, 0)
+    # ed = datetime(2008, 1, 3, 6, 0)
+    # dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
+    # x, y, land = return_co_ords(r.start.long, r.finish.long,
+    #                             r.start.lat, r.finish.lat,
+    #                             r.n_ranks, r.n_width, r.d_node)
+    # tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
+    # tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
+    # twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
+    # wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
+    # wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
+    # wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
+    #                         lat2_area2)
+    # wd = change_area_values(wd, 240.0, lon1_area1, lat1_area1,
+    #                         lon2_area1, lat2_area1)
+    # for t in dt:
+    #     jt, et, x_r, y_r = min_time_calculate(r, t, craft,
+    #                                           x, y, land,
+    #                                           tws, twd, wd, wh, wp)
+    #     vt = datetime.fromtimestamp(jt) - t
+    #     print("Journey time is: ", vt)
+    #     fill = 10
+    #     string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
+    #     plot_failure_route(t, r, x, y, x_r, y_r,
+    #                        et, jt, fill,
+    #                        dia_path+string+"_")
 
 
 def asv_grid_error():
@@ -115,8 +118,12 @@ def asv_grid_error():
 
     Using Maribot Vane performance estimates for the transatlantic voyage.
     """
-    start = Location(-2.3700, 50.256)
-    finish = Location(-61.777, 17.038)
+    lon1 = -59.9
+    lat1 = -1.77
+    lon2 = -6.4
+    lat2 = 61.5
+    start = Location(-12.0, 45.0)
+    finish = Location(-60.0, 17.5)
     fm = gen_env_model()
     craft = asv_uncertain(1.0, 1.0, fm)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
@@ -135,6 +142,12 @@ def asv_grid_error():
                                     r.start.lat, r.finish.lat,
                                     r.n_ranks, r.n_width, r.d_node)
         tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
+        tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
+        twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
+        wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
+        wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
+        wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
+                                lat2_area2)
         jt, et, x_r, y_r = min_time_calculate(r, sd, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
@@ -160,7 +173,6 @@ def reliability_uncertainty_routing():
     start = Location(-2.3700, 50.256)
     finish = Location(-61.777, 17.038)
     fm = gen_env_model()
-    craft = asv_uncertain(1.0, 1.0, fm)
     weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
     diagram_path = pp + "analysis/asv_transat/results/"
     sd = datetime(2016, 1, 2, 6, 0)
@@ -219,16 +231,25 @@ def plot_failure_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     map.fillcontinents(color='black')
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
+
+    x1, y1 = map(lon1_area2, lat1_area2)
+    x2, y2 = map(lon1_area2, lat2_area2)
+    x3, y3 = map(lon2_area2, lat2_area2)
+    x4, y4 = map(lon2_area2, lat1_area2)
+    poly1 = Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)],
+                    fill=False, hatch='\\', label="Area 2")
+    plt.gca().add_patch(poly1)
+    x1, y1 = map(lon1_area1, lat1_area1)
+    x2, y2 = map(lon1_area1, lat2_area1)
+    x3, y3 = map(lon2_area1, lat2_area1)
+    x4, y4 = map(lon2_area1, lat1_area1)
+    poly2 = Polygon([(x1, y1), (x2, y2), (x3, y3), (x4, y4)],
+                    fill=False, hatch='/', label="Area 1")
+    plt.gca().add_patch(poly2)
+
     if vt.total_seconds() < 10000000:
         x_r, y_r = map(x_r, y_r)
         map.plot(x_r, y_r, color='green', label='Minimum time path')
-        x, y = map(x, y)
-        ctf = map.contourf(x, y, et, cmap='bwr')
-        y_tick_labs = [timestamp_to_delta_time(start, x) for x in
-                       np.linspace(et[et < 1e307].min(),
-                                   et[et < 1e307].max(), 9)]
-        cbar = plt.colorbar(ctf, orientation='horizontal')
-        cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
         tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
         plt.title(tit)
     else:
@@ -239,7 +260,6 @@ def plot_failure_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
         except ValueError:
             pass
     plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
-    # plt.tight_layout()
     plt.savefig(fname+"min_time"+".png")
     plt.clf()
 

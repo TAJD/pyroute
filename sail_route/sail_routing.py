@@ -222,7 +222,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     add_param = fill
     res = 'i'
     plt.figure(figsize=(6, 10))
-    map = Basemap(projection='merc',
+    map = Basemap(projection='tmerc',
                   ellps='WGS84',
                   lat_0=(y.min() + y.max())/2,
                   lon_0=(x.min() + x.max())/2,
@@ -263,20 +263,6 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
                         s=1, label='No go')
         except ValueError:
             pass
-    # start1_lon = -16.0
-    # start1_lat = 51.0
-    # start2_lon = -8.0
-    # start2_lat = 45.0
-    # fin_lon = -60.0
-    # fin1_lat = 25.0
-    # fin2_lat = 10.0
-    #
-    # s1lon, s1lat = map(start1_lon, start1_lat)
-    # s2lon, s2lat = map(start2_lon, start2_lat)
-    # f1lon, f1lat = map(fin_lon, fin1_lat)
-    # f2lon, f2lat = map(fin_lon, fin2_lat)
-    # plt.plot([s1lon, s2lon], [s1lat, s2lat], label="Start line")
-    # plt.plot([f1lon, f2lon], [f1lat, f2lat], label="Finish line")
     plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
     # plt.tight_layout()
     plt.savefig(fname+"min_time"+".png")
