@@ -19,7 +19,7 @@ from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
 
-
+# pp = "/Users/thomasdickson/Documents/python_routing/"
 pp = "/home/td7g11/pyroute/"
 
 
@@ -29,7 +29,7 @@ def run_simulation_over_days():
     finish = Location(-61.777, 17.038)
     fm = gen_env_model()
     craft = asv_uncertain(1.0, 0.8, fm)
-    n_nodes = 60
+    n_nodes = 10t
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)

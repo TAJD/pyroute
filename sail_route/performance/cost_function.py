@@ -9,6 +9,7 @@ thomas.dickson@soton.ac.uk
 """
 
 import numpy as np
+from numpy import radians, sin, cos, sqrt, arcsin, arctan2
 import datetime
 from numba import jit, njit
 from sail_route.performance.bbn import env_bbn_interrogate
@@ -21,29 +22,21 @@ def haversine(lon1, lat1, lon2, lat2):
 
     Return the value in km.
     """
-    lon1, lat1, lon2, lat2 = np.radians(np.array([lon1, lat1, lon2, lat2]))
-    dlon = lon2 - lon1
-    dlat = lat2 - lat1
-    a = np.sin((dlat)/2)**2 + np.cos(lat1) * np.cos(lat2) * \
-        np.sin((dlon)/2)**2
-    dist = 6371 * 2 * np.arcsin(np.sqrt(a)) * 0.5399565
-    bearing = np.rad2deg(np.arctan2(dlat, dlon))
-    return dist, bearing
+    R = 6372.8  # Earth radius in kilometers
 
+    dLat = radians(lat2 - lat1)
+    dLon = radians(lon2 - lon1)
+    lat1 = radians(lat1)
+    lat2 = radians(lat2)
+    lon1 = radians(lon1)
+    lon2 = radians(lon2)
 
-@njit(fastmath=True, nogil=True)
-def wind_strength_step(x):
-    """Wind strength failure function."""
-    return 1 * (x > 20.0)
-
-
-@jit(cache=True)
-def craft_failure_model(time, tws, twa):
-    """Return probability of failure as a function of time and environment."""
-    time = time/datetime.timedelta(hours=1)
-    pf_wind = wind_strength_step(tws)
-    pf_time = np.exp(0.001*time) - 1
-    return np.min((np.max((pf_time, pf_wind)), 1.0))
+    a = sin(dLat/2)**2 + cos(lat1)*cos(lat2)*sin(dLon/2)**2
+    c = 2*arcsin(sqrt(a))
+    theta = arctan2(sin(dLon)*cos(lat2),
+                    cos(lat1)*sin(lat2)-sin(lat1)*cos(lat2)*cos(dLon))
+    theta = (np.rad2deg(theta) + 360) % 360
+    return R*c*0.5399565, theta
 
 
 @njit(fastmath=True, nogil=True)
@@ -60,9 +53,9 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     if True in np.isnan([tws, twd, i_wd, i_wh, i_wp]):
         return np.inf
     twa = dir_to_relative(bearing, twd)
-    wave_dir = dir_to_relative(bearing, i_wd)
-    speed = craft.return_perf(np.abs(twa), tws)
+    speed = craft.return_perf(twa, tws)
     if craft.apf < 1.0:
+        wave_dir = dir_to_relative(bearing, i_wd)
         fc = env_bbn_interrogate(craft.failure, tws, twd, i_wh, wave_dir)
     else:
         fc = 0.0
@@ -72,3 +65,7 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
         return np.inf
     else:
         return datetime.timedelta(hours=np.float64(dist/speed))
+
+
+if __name__ == '__main__':
+    print(haversine(-88.67, 36.12, -118.40, 33.94))

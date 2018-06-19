@@ -1,0 +1,4 @@
+[
+  "tests/test_route.py::test_func_fast",
+  "tests/test_route.py::test_func_slow"
+]

@@ -238,7 +238,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
     parallels = np.arange(-90.0, 90.0, 20.)
     map.drawparallels(parallels, labels=[1, 0, 0, 0])
     meridians = np.arange(180., 360., 20.)
-    map.fillcontinents(color='black')
+    # map.fillcontinents(color='black')
     map.drawmeridians(meridians, labels=[0, 0, 0, 1])
     map.scatter(r_f_x, r_f_y, color='blue', s=50, label='Finish')
     if vt.total_seconds() < 8640000:
@@ -268,7 +268,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
         map.scatter(x[et > 1e308], y[et > 1e308], color='red',
                     s=1, label='No go')
-    except ValueError:
+    except IndexError:
         pass
     plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
     # plt.tight_layout()
@@ -318,5 +318,5 @@ def plot_isochrones(start, route, x, y, et, fill, fname):
                     s=1, label='No go')
     except ValueError:
         pass
-    map.fillcontinents(color='black')
+    # map.fillcontinents(color='black')
     plt.savefig(fname+"isochrones"+".png")

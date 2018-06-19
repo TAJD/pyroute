@@ -7,17 +7,18 @@ thomas.dickson@soton.ac.uk
 from context import sail_route
 import numpy as np
 from datetime import datetime
-from canoe_voyaging_utils import datetime_range, load_tongiaki_perf, \
-                                tong_uncertain
+from canoe_voyaging_utils import datetime_range, tong_uncertain
 from sail_route.performance.bbn import gen_env_model
 from sail_route.weather.load_weather import process_wind, process_waves
 from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
-from grid_error import calc_h
 
-pp = "/home/td7g11/pyroute/"
+
+# pp = "/home/td7g11/pyroute/"
+pp = "/Users/thomasdickson/Documents/python_routing/"
+# dia_path = pp + "analysis/poly_data/finney_sims"
 
 
 def run_simulation_over_days():
@@ -26,13 +27,13 @@ def run_simulation_over_days():
     hawaii = Location(-157.92, 21.83)
     fm = gen_env_model()
     craft = tong_uncertain(1.0, 1.0, fm)
-    n_nodes = 100
+    n_nodes = 40
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
     dist, bearing = haversine(tahiti.long, tahiti.lat, hawaii.long,
                               hawaii.lat)
-    node_distance = 2000*dist/n_width
+    node_distance = 4000*dist/n_width
     print("Node height distance is ", dist/n_nodes*1000, " m")
     print("Node width distance is ", node_distance, " m")
     area = node_distance*dist/n_nodes*1000
@@ -43,7 +44,7 @@ def run_simulation_over_days():
               node_distance, craft)
     wind_fname = pp + "analysis/poly_data/data_dir/finney_wind_forecast.nc"
     waves_fname = pp + "analysis/poly_data/data_dir/finney_wave_data.nc"
-    dia_path = pp + "analysis/poly_data/finney_sims"
+    dia_path = pp + "analysis/poly_data/finney_sims/"
     sd = datetime(1976, 5, 1, 0, 0)
     ed = datetime(1976, 5, 2, 0, 0)
     dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
@@ -58,9 +59,11 @@ def run_simulation_over_days():
                                               tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
+        fill = 10
+        string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
         plot_mt_route(t, r, x, y, x_r, y_r,
-                      et, jt,
-                      dia_path+"/"+str(t)+"_"+str(craft.apf)+"_"+str(n_nodes)+"_")
+                      et, jt, fill,
+                      dia_path+string+"_")
 
 
 def grid_error():
@@ -107,5 +110,5 @@ def grid_error():
 
 
 if __name__ == '__main__':
-    # run_simulation_over_days()
-    grid_error()
+    run_simulation_over_days()
+    # grid_error()
