@@ -1,4 +1,5 @@
 [
-  "tests/test_route.py::test_func_fast",
-  "tests/test_route.py::test_func_slow"
+  "tests/test_performance.py::test_haversine",
+  "tests/test_performance.py::test_dir_to_relative",
+  "tests/test_performance.py::test_performance_interpolation"
 ]
