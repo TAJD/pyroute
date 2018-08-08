@@ -7,6 +7,8 @@ This collection of scripts allow the modelling of sailing craft routing in Pytho
 1. Reliability
 2. Discretisation error
 
+Research continued in [sail_route](https://github.com/TAJD/sail_route.jl)
+
 # Installation
 
-I have not worked up a formal installation process yet as I have switched my focus towards continuing my work in Julia, as seen in [sail_route](https://github.com/TAJD/sail_route.jl)
+Git clone the repository. I hope to add the package version list to allow quick installation.
