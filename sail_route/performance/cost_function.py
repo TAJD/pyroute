@@ -20,7 +20,7 @@ def haversine(lon1, lat1, lon2, lat2):
     """
     Calculate the great circle distance between two points.
 
-    Return the value in km.
+    Return the value in nm.
     """
     R = 6372.8  # Earth radius in kilometers
 
