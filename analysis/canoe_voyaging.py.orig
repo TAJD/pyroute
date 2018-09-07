@@ -14,9 +14,15 @@ from sail_route.sail_routing import Location, Route, \
                                    min_time_calculate, plot_mt_route
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
+<<<<<<< HEAD
+
+=======
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
 
 
-pp = "/home/td7g11/pyroute/"
+# pp = "/home/td7g11/pyroute/"
+pp = "/Users/thomasdickson/Documents/python_routing/"
+# dia_path = pp + "analysis/poly_data/finney_sims"
 
 
 def run_simulation_over_days():
@@ -24,8 +30,13 @@ def run_simulation_over_days():
     tahiti = Location(-149.426, -17.651)
     hawaii = Location(-157.92, 21.83)
     fm = gen_env_model()
+<<<<<<< HEAD
     craft = tong_uncertain(0.95, 1.0, fm)
     n_nodes = 160
+=======
+    craft = tong_uncertain(1.0, 1.0, fm)
+    n_nodes = 40
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -57,7 +68,11 @@ def run_simulation_over_days():
                                               tws, twd, wd, wh, wp)
         vt = datetime.fromtimestamp(jt) - t
         print("Journey time is: ", vt)
+<<<<<<< HEAD
         fill = 5
+=======
+        fill = 10
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
         string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
         plot_mt_route(t, r, x, y, x_r, y_r,
                       et, jt, fill,

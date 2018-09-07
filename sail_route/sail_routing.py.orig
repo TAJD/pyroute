@@ -254,6 +254,7 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
         #                            et.max(), 9)]
         cbar = plt.colorbar(ctf, orientation='horizontal')
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
+<<<<<<< HEAD
         tit = "\n".join(textwrap.wrap("Journey time: " + str(vt), 80))
         plt.title(tit)
     else:
@@ -261,6 +262,14 @@ def plot_mt_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
         try:
             map.scatter(x[et == np.inf], y[et == np.inf], color='red',
                         s=1, label='No go')
+        except ValueError:
+            pass
+=======
+        map.scatter(x[et > 1e308], y[et > 1e308], color='red',
+                    s=1, label='No go')
+    except IndexError:
+        pass
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
     plt.legend(loc='lower right', fancybox=True, framealpha=0.5)
     # plt.tight_layout()
     plt.savefig(fname+"min_time"+".png")
@@ -304,7 +313,11 @@ def plot_isochrones(start, route, x, y, et, fill, fname):
         cbar.ax.set_xticklabels(y_tick_labs, rotation=25)
     except ValueError:
         pass
+<<<<<<< HEAD
     map.scatter(x[et > 9000000], y[et > 9000000], color='red',
                 s=1, label='No go')
     map.fillcontinents(color='black')
+=======
+    # map.fillcontinents(color='black')
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
     plt.savefig(fname+"isochrones"+".png")

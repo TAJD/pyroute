@@ -7,7 +7,8 @@ thomas.dickson@soton.ac.uk
 
 """
 
-from .context import *
+from context import *
+from sail_route.route.grid_locations import return_co_ords
 import pytest
 import numpy as np
 import numpy.testing as np

@@ -53,12 +53,16 @@ def cost_function(x1, y1, x2, y2, tws, twd, i_wd, i_wh, i_wp,
     if True in np.isnan([tws, twd, i_wd, i_wh, i_wp]):
         return np.inf
     twa = dir_to_relative(bearing, twd)
+<<<<<<< HEAD
     speed = craft.return_perf(np.abs(twa), tws)
     if craft.apf < 1.0:
         wave_dir = dir_to_relative(bearing, i_wd)
         # lifetime may be included in this function here
-        fc = env_bbn_interrogate(craft.failure, tws, twd, i_wh, wave_dir)
-    else:
+=======
+    speed = craft.return_perf(twa, tws)
+    if craft.apf < 1.0:
+        wave_dir = dir_to_relative(bearing, i_wd)
+>>>>>>> 2b193c1b8ad97d4c8e48ce2815074d4e4b2516ee
         fc = env_bbn_interrogate(craft.failure, tws, twd, i_wh, wave_dir)
     else:
         fc = 0.0
