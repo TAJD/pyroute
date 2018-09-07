@@ -95,37 +95,44 @@ def download_wind_poly():
     download_wind(path, -10, -150.0, -18.0, -135.0)
 
 
-def download_weather_ERA5(path, N, W, S, E):
+def download_weather_ERA5(path, N, W, S, E, y, m1, d1, m2, d2):
     "Download weather from era5 model. Downloads wind and wave data."
     server = ECMWFDataServer()
     server.retrieve({
     "class": "ea",
     "dataset": "era5",
-    "date": "2016-05-01/to/2016-05-31",
+    "date": str(y)+"-"+m1+"-"+d1+"/to/"+str(y)+"-"+m2+"-"+d2,
     "domain": "g",
     "expver": "1",
     "number": "0/1/2/3/4/5/6/7/8/9",
     "param": "229.140/238.140/239.140/245.140/249.140",
     "stream": "ewda",
+    'grid': "0.75/0.75",
     "time": "00:00:00/04:00:00/08:00:00/12:00:00/16:00:00/20:00:00",
     "type": "an",
-    # 'area': str(N) + "/" + str(W) + "/" + str(S) + "/" + str(E),
+    'area': str(N) + "/" + str(W) + "/" + str(S) + "/" + str(E),
     'format': "netcdf",
-    'target': path+"/data_dir/2016_summer_data.nc"
+    'target': path
     })
 
 
 
 if __name__ == '__main__':
-    N = 55.0
+    N = 70.0
     S = 0.0
-    W = -60.0
-    E = -10.0
-    path = "/home/thomas/Documents/pyroute/analysis/asv"
+    W = -85.0
+    E = 10.0
+    p = "/home/td7g11/weather_data/transat_weather/"
+    y = 2016
+    m1 = "12"
+    d1 = "01"
+    d2 = "31"
+    n = "2016_december.nc"
+    path = p+n
     # download_wind_era40(path, N, W, S, E)
     # download_wave_era40(path, N, W, S, E)
     # download_wind(path, N, W, S, E)
     # download_wave_interim(path, N, W, S, E)
-    download_weather_ERA5(path, N, W, S, E)
+    download_weather_ERA5(path, N, W, S, E, y, m1, d1, m1, d2)
     # plot_wind_data(path+"/data_dir/", "wind_forecast.nc")
     # generate_gif(path+"/data_dir", "2000 July")

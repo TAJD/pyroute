@@ -1,13 +1,22 @@
-Nodes in rank:  620
-Nodes in width:  620
-Node height distance is  4687.375243617738  m
-Node width distance is  18749.500974470953  m
-h = 9374.750487235477 
-Create weight file: patch_721x1437_620x620.nc
-Reuse existing file: patch_721x1437_620x620.nc
-Reuse existing file: patch_721x1437_620x620.nc
-Reuse existing file: patch_721x1437_620x620.nc
-Reuse existing file: patch_721x1437_620x620.nc
-min_time_calculate took 42562.595166 seconds
-Journey time is:  36 days, 6:06:46.221234
-
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+min_time_calculate took 2.191817 seconds
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+min_time_calculate took 824.353369 seconds
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+Reuse existing file: patch_721x1437_60x60.nc
+min_time_calculate took 69.558635 seconds
+[8.5482856e+09 8.5482856e+09 8.5482856e+09]
+[[8.0000000e-01 1.0000000e+00 8.5482856e+09]
+ [9.1000000e-01 1.0000000e+00 8.5482856e+09]
+ [1.0000000e+00 1.0000000e+00 8.5482856e+09]]

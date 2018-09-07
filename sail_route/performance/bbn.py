@@ -53,10 +53,10 @@ def gen_env_model():
     cpd_tws = TabularCPD('TWS', 2, values=[[0.8, 0.2]])
     cpd_twa = TabularCPD('TWA', 2, values=[[0.8, 0.2]])
     cpd_wind = TabularCPD('Wind', 2,
-                          # values=[[1, 0.1, 0.1, 0.0],
-                          #         [0.0, 0.9, 0.9, 1.0]],
-                           values = [[1, 0.999, 0.999, 0.998],
-                                     [0.0, 0.001, 0.001, 0.002]], # min
+                          values=[[1, 0.1, 0.1, 0.0],
+                                  [0.0, 0.9, 0.9, 1.0]],
+                           # values = [[1, 0.999, 0.999, 0.998],
+                           #           [0.0, 0.001, 0.001, 0.002]], # min
                           evidence=['TWA', 'TWS'],
                           evidence_card=[2, 2])
     cpd_wh = TabularCPD('WH', 2, values=[[0.8, 0.2]])

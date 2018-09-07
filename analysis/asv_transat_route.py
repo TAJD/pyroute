@@ -14,7 +14,8 @@ from asv_utils import asv_uncertain
 from sail_route.performance.bbn import gen_env_model
 from sail_route.weather.load_weather import process_era5_weather, change_area_values
 from sail_route.sail_routing import Location, Route, \
-                                   min_time_calculate, timestamp_to_delta_time
+                                   min_time_calculate, \
+                                   plot_mt_route
 from sail_route.performance.cost_function import haversine
 from sail_route.route.grid_locations import return_co_ords
 from grid_error import calc_h
@@ -67,7 +68,7 @@ def run_simulation_over_days():
     finish = Location(-60.0, 17.5)
     fm = gen_env_model()
     craft = asv_uncertain(1.0, 1.0, fm)
-    n_nodes = 620
+    n_nodes = 480
     n_width = n_nodes
     print("Nodes in rank: ", n_nodes)
     print("Nodes in width: ", n_width)
@@ -80,36 +81,39 @@ def run_simulation_over_days():
     total_area = n_nodes * n_width * area
     h = (1/(n_nodes * n_width) * total_area)**0.5
     print("h = {0} ".format(h))
-    # r = Route(start, finish, n_nodes, n_width,
-    #           node_distance, craft)
-    # weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
-    # dia_path = pp + "analysis/asv_transat/results/"
-    # sd = datetime(2008, 1, 2, 6, 0)
-    # ed = datetime(2008, 1, 3, 6, 0)
-    # dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
-    # x, y, land = return_co_ords(r.start.long, r.finish.long,
-    #                             r.start.lat, r.finish.lat,
-    #                             r.n_ranks, r.n_width, r.d_node)
-    # tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
-    # tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
-    # twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
-    # wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
-    # wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
-    # wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
-    #                         lat2_area2)
-    # wd = change_area_values(wd, 240.0, lon1_area1, lat1_area1,
-    #                         lon2_area1, lat2_area1)
-    # for t in dt:
-    #     jt, et, x_r, y_r = min_time_calculate(r, t, craft,
-    #                                           x, y, land,
-    #                                           tws, twd, wd, wh, wp)
-    #     vt = datetime.fromtimestamp(jt) - t
-    #     print("Journey time is: ", vt)
-    #     fill = 10
-    #     string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)
-    #     plot_failure_route(t, r, x, y, x_r, y_r,
-    #                        et, jt, fill,
-    #                        dia_path+string+"_")
+    r = Route(start, finish, n_nodes, n_width,
+              node_distance, craft)
+    weather_path = pp + "analysis/asv_transat/2016_jan_march.nc"
+    dia_path = pp + "analysis/asv_transat/results/"
+    sd = datetime(2008, 1, 2, 6, 0)
+    ed = datetime(2008, 1, 3, 6, 0)
+    dt = [d for d in datetime_range(sd, ed, {'days': 1, 'hours': 0})]
+    x, y, land = return_co_ords(r.start.long, r.finish.long,
+                                r.start.lat, r.finish.lat,
+                                r.n_ranks, r.n_width, r.d_node)
+    tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
+    tws = change_area_values(tws, 15.0, lon1, lat1, lon2, lat2)
+    twd = change_area_values(twd, 0.0, lon1, lat1, lon2, lat2)
+    wd = change_area_values(wd, 0.0, lon1, lat1, lon2, lat2)
+    wh = change_area_values(wh, 0.0, lon1, lat1, lon2, lat2)
+    wh = change_area_values(wh, 4.0, lon1_area2, lat1_area2, lon2_area2,
+                            lat2_area2)
+    wd = change_area_values(wd, 240.0, lon1_area1, lat1_area1,
+                            lon2_area1, lat2_area1)
+    for t in dt:
+        jt, et, x_r, y_r = min_time_calculate(r, t, craft,
+                                              x, y, land,
+                                              tws, twd, wd, wh, wp)
+        vt = datetime.fromtimestamp(jt) - t
+        print("Journey time is: ", vt)
+        fill = 10
+        string = str(t)+"_"+str(craft.apf)+"_"+str(craft.unc)+"_"+str(n_nodes)+"_weather"
+        plot_failure_route(t, r, x, y, x_r, y_r,
+                           et, jt, fill,
+                           dia_path+string+"_")
+        plot_mt_route(t, r, x, y, x_r, y_r,
+                      et, jt, fill,
+                      dia_path+string+"_")
 
 
 def asv_grid_error():
@@ -165,8 +169,8 @@ def asv_grid_error():
 
 def reliability_uncertainty_routing():
     """Routing for a range of uncertainty and reliability levels."""
-    rel_levels = np.array([0.81, 0.91, 1.0])
-    unc_levels = np.array([0.95, 1.0, 1.05])
+    rel_levels = np.array([0.7, 0.85, 1.0])
+    unc_levels = np.array([1.0])
     test_matrix = np.array(np.meshgrid(rel_levels,
                                        unc_levels)).T.reshape(-1, 2)
     fts = []
@@ -180,15 +184,14 @@ def reliability_uncertainty_routing():
                               finish.long, finish.lat)
     nodes = 60
     node_distance = 4000*dist/nodes
-    r = Route(start, finish, nodes, nodes,
-              node_distance*1000.0, craft)
-    x, y, land = return_co_ords(r.start.long, r.finish.long,
-                                r.start.lat, r.finish.lat,
-                                r.n_ranks, r.n_width, r.d_node)
-    tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
     for i in range(test_matrix.shape[0]):
         craft = asv_uncertain(test_matrix[i, 1], test_matrix[i, 0], fm)
-
+        r = Route(start, finish, nodes, nodes,
+                  node_distance*1000.0, craft)
+        x, y, land = return_co_ords(r.start.long, r.finish.long,
+                                    r.start.lat, r.finish.lat,
+                                    r.n_ranks, r.n_width, r.d_node)
+        tws, twd, wd, wh, wp = process_era5_weather(weather_path, x, y)
         jt, et, x_r, y_r = min_time_calculate(r, sd, craft,
                                               x, y, land,
                                               tws, twd, wd, wh, wp)
@@ -200,8 +203,8 @@ def reliability_uncertainty_routing():
     print(save_array)
     with open(diagram_path+"unc_reliability_routing_"+strftime("""%Y-%m-%d
                                                                %H:%M:%S""",
-                                                              gmtime())+".txt",
-             'wb') as f:
+                                                               gmtime())+".txt",
+              'wb') as f:
         np.savetxt(f, save_array, delimiter='\t', fmt='%1.3f')
 
 
@@ -265,6 +268,6 @@ def plot_failure_route(start, route, x, y, x_r, y_r, et, jt, fill, fname):
 
 
 if __name__ == '__main__':
-    run_simulation_over_days()
+    # run_simulation_over_days()
     # asv_grid_error()
-    # reliability_uncertainty_routing()
+    reliability_uncertainty_routing()
