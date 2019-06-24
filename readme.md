@@ -1,6 +1,6 @@
 # Python routing
 
-> Sailing craft route modelling modelled in Python.
+> Sailing craft route modelling in Python.
 
 This collection of scripts allow the modelling of sailing craft routing in Python. It provides the ability to model;
 
